@@ -1,0 +1,323 @@
+<div class="admin-team-page">
+
+  <!-- Header Banner -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="title-with-badge">
+        <span class="material-symbols-outlined header-icon">groups</span>
+        <h1>Gestion de l'équipe</h1>
+        <span class="count-badge">{{ teamMembers.length }} membre{{ teamMembers.length > 1 ? 's' : '' }}</span>
+      </div>
+      <p class="header-subtitle">Gérez les praticiens affichés sur le site public, modifiez leurs informations et importez leurs photos de profil.</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-primary" (click)="openAddModal()">
+        <span class="material-symbols-outlined">person_add</span>
+        <span>Ajouter un membre</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Notifications -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="material-symbols-outlined">check_circle</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="errorMessage">
+    <span class="material-symbols-outlined">error</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement des membres de l'équipe...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && teamMembers.length === 0">
+    <span class="material-symbols-outlined empty-icon">group_off</span>
+    <h3>Aucun membre dans l'équipe</h3>
+    <p>Cliquez sur "Ajouter un membre" pour commencer à créer la présentation de votre équipe médicale.</p>
+    <button class="btn-primary" (click)="openAddModal()">
+      <span class="material-symbols-outlined">add</span>
+      <span>Ajouter le premier membre</span>
+    </button>
+  </div>
+
+  <!-- Members Grid / List -->
+  <div class="members-grid" *ngIf="!isLoading && teamMembers.length > 0">
+    <div class="member-admin-card" *ngFor="let member of teamMembers" [class.hidden-member]="!member.actif">
+      
+      <!-- Photo Header -->
+      <div class="card-photo-container">
+        <img 
+          [src]="getImageUrl(member.photoUrl)" 
+          [alt]="member.photoAlt || member.nomComplet" 
+          class="member-admin-photo"
+          (error)="handleImageError($event)">
+        
+        <div class="card-badges">
+          <span class="status-badge" [class.active]="member.actif" [class.inactive]="!member.actif">
+            {{ member.actif ? 'Visible' : 'Masqué' }}
+          </span>
+          <span class="order-badge">Ordre #{{ member.ordreAffichage }}</span>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="card-admin-body">
+        <h3 class="member-name">{{ member.nomComplet }}</h3>
+        <p class="member-title">{{ member.titre }}</p>
+        <p class="member-specialty" *ngIf="member.specialite">
+          <span class="material-symbols-outlined icon-inline">medical_information</span>
+          <span>{{ member.specialite }}</span>
+        </p>
+        <p class="member-desc-preview" *ngIf="member.description">{{ member.description }}</p>
+      </div>
+
+      <!-- Actions Footer -->
+      <div class="card-admin-actions">
+        <button type="button" class="btn-action edit" (click)="openEditModal(member)" title="Modifier les informations">
+          <span class="material-symbols-outlined">edit</span>
+          <span>Modifier</span>
+        </button>
+
+        <button type="button" class="btn-action status" (click)="toggleStatus(member)" [title]="member.actif ? 'Masquer du site' : 'Afficher sur le site'">
+          <span class="material-symbols-outlined">{{ member.actif ? 'visibility_off' : 'visibility' }}</span>
+          <span>{{ member.actif ? 'Masquer' : 'Afficher' }}</span>
+        </button>
+
+        <button type="button" class="btn-action delete" (click)="openDeleteModal(member)" title="Supprimer le membre">
+          <span class="material-symbols-outlined">delete</span>
+          <span>Supprimer</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADD / EDIT MODAL -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-window" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <span class="material-symbols-outlined modal-icon">{{ isEditMode ? 'manage_accounts' : 'person_add' }}</span>
+          <h2>{{ isEditMode ? 'Modifier le membre' : 'Ajouter un membre de l\'équipe' }}</h2>
+        </div>
+        <button type="button" class="btn-close" (click)="closeModal()" [disabled]="isSubmitting" aria-label="Fermer">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="modal-body">
+        
+        <div class="alert alert-danger" *ngIf="modalErrorMessage">
+          <span class="material-symbols-outlined">error</span>
+          <span>{{ modalErrorMessage }}</span>
+        </div>
+
+        <form (ngSubmit)="saveMember()" #memberForm="ngForm">
+          
+          <div class="form-row">
+            <!-- Nom complet -->
+            <div class="form-group col-half">
+              <label class="form-label required">Nom complet</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="formNomComplet" 
+                name="nomComplet" 
+                placeholder="ex. Dr Youness Kâa" 
+                required>
+            </div>
+
+            <!-- Titre / Fonction -->
+            <div class="form-group col-half">
+              <label class="form-label required">Titre / Fonction</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="formTitre" 
+                name="titre" 
+                placeholder="ex. Chirurgien-dentiste" 
+                required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <!-- Spécialité -->
+            <div class="form-group col-half">
+              <label class="form-label">Spécialités / Rôles</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="formSpecialite" 
+                name="specialite" 
+                placeholder="ex. Chirurgie dentaire, Omnipratique, Esthétique">
+              <span class="field-hint">Séparer les spécialités par des virgules</span>
+            </div>
+
+            <!-- Ordre d'affichage & Statut -->
+            <div class="form-group col-half flex-row-align">
+              <div class="sub-col">
+                <label class="form-label">Ordre d'affichage</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  [(ngModel)]="formOrdreAffichage" 
+                  name="ordreAffichage" 
+                  min="0">
+              </div>
+
+              <div class="sub-col status-toggle-col">
+                <label class="form-label">Visibilité</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" [(ngModel)]="formActif" name="actif">
+                  <span class="slider"></span>
+                  <span class="toggle-text">{{ formActif ? 'Visible sur le site' : 'Masqué du site' }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label">Description / Biographie</label>
+            <textarea 
+              class="form-control textarea" 
+              rows="3" 
+              [(ngModel)]="formDescription" 
+              name="description" 
+              placeholder="Présentation synthétique du membre de l'équipe..."></textarea>
+          </div>
+
+          <!-- Photo Upload Section -->
+          <div class="form-group photo-upload-section">
+            <label class="form-label">Photo de profil</label>
+
+            <div class="photo-picker-box">
+              
+              <!-- Current or New Preview -->
+              <div class="photo-preview-wrapper" *ngIf="photoPreviewUrl || existingPhotoUrl">
+                <img 
+                  [src]="photoPreviewUrl || getImageUrl(existingPhotoUrl!)" 
+                  alt="Aperçu photo" 
+                  class="photo-preview-img"
+                  (error)="handleImageError($event)">
+                
+                <button type="button" class="btn-remove-photo" *ngIf="photoPreviewUrl" (click)="removeSelectedPhoto()" title="Annuler le choix d'image">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div class="upload-controls">
+                <input 
+                  #photoFileInput 
+                  type="file" 
+                  accept="image/jpeg,image/png,image/webp" 
+                  (change)="onPhotoSelected($event)" 
+                  style="display: none;">
+
+                <button 
+                  type="button" 
+                  class="btn-secondary btn-upload" 
+                  (click)="photoFileInput.click()" 
+                  [disabled]="isSubmitting">
+                  <span class="material-symbols-outlined">add_a_photo</span>
+                  <span>{{ photoPreviewUrl || existingPhotoUrl ? 'Changer la photo' : 'Choisir une photo' }}</span>
+                </button>
+
+                <span class="upload-info-text">Formats autorisés : JPEG, PNG, WebP (Max 5 Mo)</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Texte alternatif photo -->
+          <div class="form-group">
+            <label class="form-label">Texte alternatif de la photo (SEO & Accessibilité)</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="formPhotoAlt" 
+              name="photoAlt" 
+              placeholder="ex. Dr Youness Kâa, Chirurgien-dentiste au cabinet YT Smile Center">
+          </div>
+
+          <div class="form-row">
+            <!-- Instagram -->
+            <div class="form-group col-half">
+              <label class="form-label">Lien Instagram (facultatif)</label>
+              <input 
+                type="url" 
+                class="form-control" 
+                [(ngModel)]="formInstagramUrl" 
+                name="instagramUrl" 
+                placeholder="https://instagram.com/...">
+            </div>
+
+            <!-- LinkedIn -->
+            <div class="form-group col-half">
+              <label class="form-label">Lien LinkedIn (facultatif)</label>
+              <input 
+                type="url" 
+                class="form-control" 
+                [(ngModel)]="formLinkedinUrl" 
+                name="linkedinUrl" 
+                placeholder="https://linkedin.com/in/...">
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="isSubmitting">
+          Annuler
+        </button>
+        <button type="button" class="btn-primary" (click)="saveMember()" [disabled]="isSubmitting || !formNomComplet || !formTitre">
+          <span class="spinner-small" *ngIf="isSubmitting"></span>
+          <span class="material-symbols-outlined" *ngIf="!isSubmitting">check</span>
+          <span>{{ isSubmitting ? 'Enregistrement...' : (isEditMode ? 'Mettre à jour' : 'Ajouter le membre') }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div class="modal-backdrop" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()">
+    <div class="modal-window confirm-dialog" (click)="$event.stopPropagation()">
+      
+      <div class="confirm-header">
+        <span class="material-symbols-outlined warning-icon">warning</span>
+        <h3>Confirmer la suppression</h3>
+      </div>
+
+      <div class="confirm-body">
+        <p>Voulez-vous vraiment supprimer <strong>{{ memberToDelete?.nomComplet }}</strong> de l'équipe ?</p>
+        <p class="warning-text">Cette action supprimera définitivement les données et la photo du membre de la base de données.</p>
+      </div>
+
+      <div class="confirm-footer">
+        <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting">
+          Annuler
+        </button>
+        <button type="button" class="btn-danger" (click)="confirmDelete()" [disabled]="isDeleting">
+          <span class="spinner-small" *ngIf="isDeleting"></span>
+          <span class="material-symbols-outlined" *ngIf="!isDeleting">delete_forever</span>
+          <span>{{ isDeleting ? 'Suppression...' : 'Supprimer définitivement' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

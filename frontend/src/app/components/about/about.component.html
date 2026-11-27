@@ -1,0 +1,83 @@
+<section class="about-section" id="cabinet">
+  <div class="about-container">
+    
+    <!-- Left Column: Large Image Presentation with Floating Card Overlay -->
+    <div class="about-visual">
+      <div class="visual-wrapper">
+        <div class="image-frame">
+          <img 
+            [src]="getImageUrl(settings.aboutImageUrl)" 
+            [alt]="settings.aboutImageAlt || 'Accueil et espace de soin lumineux du cabinet dentaire YT Smile Center'" 
+            class="about-image" 
+            loading="lazy">
+        </div>
+
+        <!-- Floating Glass Card Overlay -->
+        <div class="floating-glass-card">
+          <div class="card-icon">
+            <span class="material-symbols-outlined">sentiment_satisfied</span>
+          </div>
+          <div class="card-text">
+            <span class="card-main-text">Des soins de qualité</span>
+            <span class="card-sub-text">à Témara</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Content Presentation -->
+    <div class="about-content">
+      
+      <!-- Section Badge -->
+      <div class="about-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">À propos de {{ cabinet.name }}</span>
+      </div>
+
+      <!-- Section Title -->
+      <h2 class="about-title">
+        Un cabinet moderne dédié à votre <span class="gradient-text">santé bucco-dentaire</span>
+      </h2>
+
+      <!-- Two Short Paragraphs -->
+      <div class="about-text-blocks">
+        <p class="about-paragraph">
+          {{ cabinet.presentation }}
+        </p>
+        <p class="about-paragraph">
+          Notre cabinet associe des soins dentaires personnalisés aux technologies actuelles dans une atmosphère sereine. Chaque prise en charge est élaborée sur mesure, dans le respect de votre santé et de votre confort.
+        </p>
+      </div>
+
+      <!-- 3 Key Features with Icons -->
+      <div class="about-features-grid">
+        <div class="feature-item" *ngFor="let item of features">
+          <div class="feature-icon-box">
+            <span class="material-symbols-outlined feature-icon">{{ item.icon }}</span>
+          </div>
+          <span class="feature-title">{{ item.title }}</span>
+        </div>
+      </div>
+
+      <!-- Action Button & Instagram Badge -->
+      <div class="about-actions" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <a href="#equipe" class="btn-primary" (click)="navigateToTeam($event)">
+          <span>Découvrir notre équipe</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </a>
+
+        <a 
+          [href]="settings.instagramUrl || 'https://www.instagram.com/yt_smile_center/'" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          class="instagram-badge-link"
+          aria-label="Consulter l'Instagram de YT Smile Center">
+          <span class="material-symbols-outlined insta-icon">photo_camera</span>
+          <span>Suivez {{ formatInstagramHandle(settings.instagramUrl) }}</span>
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</section>

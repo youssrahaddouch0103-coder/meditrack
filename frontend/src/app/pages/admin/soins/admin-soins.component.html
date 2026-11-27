@@ -1,0 +1,524 @@
+<div class="admin-soins-page">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Gestion des Soins</h1>
+      <p class="page-subtitle">Gérez les prestations dentaires publiées sur le site, leurs descriptions et leurs albums photo</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-primary" (click)="openAddCareModal()">
+        <span class="material-symbols-outlined">add_circle</span>
+        <span>Ajouter un soin</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Global Alert Banners & Quick Gallery Access for newly created care -->
+  <div class="alert-success" *ngIf="successMessage">
+    <span class="material-symbols-outlined">check_circle</span>
+    <span class="alert-text">{{ successMessage }}</span>
+    <button type="button" class="btn-secondary sm ml-auto" *ngIf="newlyCreatedCare" (click)="openCarePhotos(newlyCreatedCare)">
+      <span class="material-symbols-outlined">collections</span>
+      <span>Gérer sa galerie maintenant</span>
+    </button>
+  </div>
+
+  <div class="alert-error" *ngIf="errorMessage">
+    <span class="material-symbols-outlined">error</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- TAB 1: SOINS LIST -->
+  <div class="soins-tab-content">
+    
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <span class="material-symbols-outlined spinner">sync</span>
+      <p>Chargement des soins depuis le serveur...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && soinsList.length === 0">
+      <span class="material-symbols-outlined empty-icon">medical_services</span>
+      <p>Aucun soin enregistré pour le moment.</p>
+      <button type="button" class="btn-primary mt-3" (click)="openAddCareModal()">
+        <span class="material-symbols-outlined">add</span>
+        <span>Créer le premier soin</span>
+      </button>
+    </div>
+
+    <!-- Soins Grid -->
+    <div class="soins-grid" *ngIf="!isLoading && soinsList.length > 0">
+      
+      <div class="soin-card" *ngFor="let soin of soinsList; let idx = index" [class.archived]="soin.statut === 'ARCHIVE'">
+        
+        <!-- Cover & Badges -->
+        <div class="soin-card-media cover-image-container">
+          <img [src]="getImageUrl(soin.photoCouvertureUrl)" [alt]="soin.photoCouvertureAlt || soin.titre" class="cover-img cover-image" (error)="handleImageError($event, soin)">
+          
+          <div class="media-badges">
+            <span class="status-badge" [class]="soin.statut.toLowerCase()">
+              {{ soin.statut === 'PUBLIE' ? 'Publié' : (soin.statut === 'MASQUE' ? 'Masqué' : 'Archivé') }}
+            </span>
+            <span class="order-badge">Ordre #{{ soin.ordreAffichage }}</span>
+          </div>
+        </div>
+
+        <!-- Details -->
+        <div class="soin-card-body">
+          <h3 class="soin-title">{{ soin.titre }}</h3>
+          <p class="soin-desc">{{ soin.descriptionCourte }}</p>
+        </div>
+
+        <!-- Action Footer Toolbar -->
+        <div class="soin-card-footer">
+          
+          <div class="reorder-controls">
+            <button type="button" class="btn-icon" [disabled]="idx === 0" (click)="moveCareUp(idx)" title="Monter l'ordre d'affichage">
+              <span class="material-symbols-outlined">arrow_upward</span>
+            </button>
+            <button type="button" class="btn-icon" [disabled]="idx === soinsList.length - 1" (click)="moveCareDown(idx)" title="Descendre l'ordre d'affichage">
+              <span class="material-symbols-outlined">arrow_downward</span>
+            </button>
+          </div>
+
+          <div class="main-actions">
+            <button type="button" class="btn-secondary sm" (click)="openCarePhotos(soin)" title="Gérer la galerie photo de ce soin">
+              <span class="material-symbols-outlined">collections</span>
+              <span>Gérer la galerie</span>
+            </button>
+
+            <button type="button" class="btn-edit sm" (click)="openEditCareModal(soin)" title="Modifier les informations du soin">
+              <span class="material-symbols-outlined">edit</span>
+              <span>Modifier</span>
+            </button>
+
+            <button type="button" class="btn-delete sm" (click)="confirmDeleteCare(soin)" title="Supprimer ou archiver ce soin">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- GALLERY DEDICATED MODAL: Galerie — [Nom du soin] -->
+  <div class="admin-modal-backdrop" *ngIf="isGalleryModalOpen && selectedCareForPhotos" (click)="closeGalleryModal()">
+    <div class="admin-modal-card xl" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span class="material-symbols-outlined title-icon">collections</span>
+          <span>Galerie — {{ selectedCareForPhotos.titre }}</span>
+        </h3>
+        <button type="button" class="modal-close-button" aria-label="Fermer" (click)="closeGalleryModal(); $event.stopPropagation()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="alert-error" *ngIf="uploadPhotoError">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ uploadPhotoError }}</span>
+      </div>
+
+      <!-- Add Photos Action Header & Multi-File Upload Section -->
+      <div class="gallery-upload-section">
+        
+        <div class="upload-trigger-bar">
+          <div>
+            <h4 class="section-title">Ajouter des photos à la galerie</h4>
+            <p class="section-subtitle">Sélectionnez plusieurs images à ajouter à cet album (JPEG, PNG, WebP — max 5 Mo par fichier)</p>
+          </div>
+
+          <input #secondaryFileInput type="file" id="secondary-files" multiple accept="image/jpeg,image/png,image/webp" (change)="onSecondaryFilesSelected($event)" hidden>
+          
+          <button type="button" class="btn-primary" (click)="secondaryFileInput.click()">
+            <span class="material-symbols-outlined">add_photo_alternate</span>
+            <span>Ajouter des photos</span>
+          </button>
+        </div>
+
+        <!-- Pending Upload Previews List -->
+        <div class="pending-uploads-block" *ngIf="pendingUploads.length > 0">
+          <div class="pending-header">
+            <span>Aperçu des images sélectionnées ({{ pendingUploads.length }} fichier(s)) :</span>
+            <button type="button" class="btn-link-danger" (click)="clearUploadFiles()">Tout effacer</button>
+          </div>
+
+          <div class="pending-items-list">
+            <div class="pending-item-card" *ngFor="let item of pendingUploads; let pIdx = index">
+              
+              <div class="pending-img-box">
+                <img [src]="item.previewUrl" [alt]="item.altText" class="pending-img">
+              </div>
+
+              <div class="pending-fields">
+                <div class="file-name-label">
+                  <span class="material-symbols-outlined">image</span>
+                  <strong>{{ item.file.name }}</strong>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label class="form-label sm">Texte alternatif (SEO) <span class="required-star">*</span></label>
+                    <input type="text" [(ngModel)]="item.altText" class="form-control sm" placeholder="Description de l'image" required>
+                  </div>
+                  <div class="form-group col">
+                    <label class="form-label sm">Légende facultative</label>
+                    <input type="text" [(ngModel)]="item.caption" class="form-control sm" placeholder="Légende facultative">
+                  </div>
+                </div>
+              </div>
+
+              <div class="pending-actions">
+                <button type="button" class="btn-action delete" (click)="removePendingUpload(pIdx)" title="Retirer cette image">
+                  <span class="material-symbols-outlined">close</span>
+                  <span>Retirer</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="pending-save-footer">
+            <button type="button" class="btn-secondary" (click)="clearUploadFiles()">Annuler la sélection</button>
+            <button type="button" class="btn-primary" (click)="submitSecondaryPhotosUpload()" [disabled]="isUploadingPhotos">
+              <span class="material-symbols-outlined" *ngIf="!isUploadingPhotos">cloud_upload</span>
+              <span class="material-symbols-outlined spinner" *ngIf="isUploadingPhotos">sync</span>
+              <span>{{ isUploadingPhotos ? 'Enregistrement...' : 'Enregistrer les photos' }}</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Current Registered Photos List Section -->
+      <div class="current-photos-section">
+        <div class="section-header-bar">
+          <h4 class="section-title">
+            <span class="material-symbols-outlined">photo_library</span>
+            <span>Photos actuellement enregistrées ({{ photos.length }})</span>
+          </h4>
+        </div>
+
+        <div class="loading-state" *ngIf="isLoadingPhotos">
+          <span class="material-symbols-outlined spinner">sync</span>
+          <p>Chargement des photos du soin...</p>
+        </div>
+
+        <!-- Empty State Message -->
+        <div class="empty-state-box" *ngIf="!isLoadingPhotos && photos.length === 0">
+          <span class="material-symbols-outlined empty-icon">add_a_photo</span>
+          <p class="empty-text">Aucune photo n’a encore été ajoutée à la galerie de ce soin.</p>
+        </div>
+
+        <!-- Registered Photos Grid -->
+        <div class="registered-photos-grid" *ngIf="!isLoadingPhotos && photos.length > 0">
+          <div class="registered-photo-card" *ngFor="let photo of photos; let pIdx = index">
+            
+            <div class="photo-media-box cover-image-container">
+              <img [src]="getImageUrl(photo.imageUrl)" [alt]="photo.altText" class="photo-img cover-image" (error)="handleImageError($event)">
+              <span class="cover-badge" *ngIf="photo.isCover">Photo de couverture</span>
+              <span class="order-badge">#{{ photo.displayOrder }}</span>
+            </div>
+
+            <div class="photo-details-box">
+              <div class="detail-line"><strong>Alt :</strong> {{ photo.altText }}</div>
+              <div class="detail-line" *ngIf="photo.caption"><strong>Légende :</strong> {{ photo.caption }}</div>
+            </div>
+
+            <div class="photo-actions-bar">
+              <button type="button" class="btn-action cover" *ngIf="!photo.isCover" (click)="setCoverPhoto(photo)" title="Définir comme photo de couverture">
+                <span class="material-symbols-outlined">star</span>
+                <span>Définir comme couverture</span>
+              </button>
+              
+              <div class="reorder-btns">
+                <button type="button" class="btn-action-icon" [disabled]="pIdx === 0" (click)="movePhotoUp(pIdx)" title="Monter">
+                  <span class="material-symbols-outlined">arrow_upward</span>
+                </button>
+                <button type="button" class="btn-action-icon" [disabled]="pIdx === photos.length - 1" (click)="movePhotoDown(pIdx)" title="Descendre">
+                  <span class="material-symbols-outlined">arrow_downward</span>
+                </button>
+              </div>
+
+              <button type="button" class="btn-action edit" (click)="openEditPhotoModal(photo)" title="Modifier">
+                <span class="material-symbols-outlined">edit</span>
+                <span>Modifier</span>
+              </button>
+
+              <button type="button" class="btn-action delete" (click)="confirmDeletePhoto(photo)" title="Supprimer">
+                <span class="material-symbols-outlined">delete</span>
+                <span>Supprimer</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-actions mt-4">
+        <button type="button" class="btn-secondary" (click)="closeGalleryModal()">Fermer</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADD / EDIT CARE FORM MODAL -->
+  <div class="admin-modal-backdrop" *ngIf="isCareFormOpen" (click)="closeCareFormModal()">
+    <div class="admin-modal-card lg" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span class="material-symbols-outlined">{{ isEditingCare ? 'edit' : 'add_circle' }}</span>
+          <span>{{ isEditingCare ? 'Modifier le soin' : 'Ajouter un nouveau soin' }}</span>
+        </h3>
+        <button type="button" class="modal-close-button" aria-label="Fermer" (click)="closeCareFormModal(); $event.stopPropagation()" [disabled]="isSubmittingCare">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="alert-error" *ngIf="formError">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ formError }}</span>
+      </div>
+
+      <form (ngSubmit)="submitCareForm()" class="modal-form">
+        
+        <!-- Nom du soin -->
+        <div class="form-group">
+          <label for="form-titre" class="form-label">Nom du soin <span class="required-star">*</span></label>
+          <input type="text" id="form-titre" [(ngModel)]="formTitre" name="formTitre" class="form-control" placeholder="ex. Blanchiment dentaire au laser" required [disabled]="isSubmittingCare">
+        </div>
+
+        <!-- Description Courte & Character Counter -->
+        <div class="form-group">
+          <div class="label-row">
+            <label for="form-desc-courte" class="form-label">Description courte (carte public) <span class="required-star">*</span></label>
+            <span class="char-count" [class.over]="formDescriptionCourte.length > 500">{{ formDescriptionCourte.length }} / 500</span>
+          </div>
+          <textarea id="form-desc-courte" [(ngModel)]="formDescriptionCourte" name="formDescriptionCourte" class="form-control textarea-sm" rows="3" maxlength="500" placeholder="Aperçu rapide affiché sur la grille publique..." required [disabled]="isSubmittingCare"></textarea>
+        </div>
+
+        <!-- Description Détaillée -->
+        <div class="form-group">
+          <label for="form-desc-detaillee" class="form-label">Description détaillée (fenêtre modale) <span class="required-star">*</span></label>
+          <textarea id="form-desc-detaillee" [(ngModel)]="formDescriptionDetaillee" name="formDescriptionDetaillee" class="form-control" rows="5" placeholder="Explications complètes sur le soin, le protocole clinique, les avantages..." required [disabled]="isSubmittingCare"></textarea>
+        </div>
+
+        <!-- 1. FIELD: Photo de couverture (carte principale) -->
+        <div class="form-group cover-field-group">
+          <label class="form-label">Photo de couverture (carte principale)</label>
+          <p class="field-help-text">Image principale affichée sur la carte du soin dans la grille de la page d'accueil.</p>
+          
+          <div class="cover-picker-wrapper">
+            <div class="cover-preview-box cover-image-container" *ngIf="coverFilePreview || existingCoverUrl">
+              <img [src]="coverFilePreview || getImageUrl(existingCoverUrl)" alt="Aperçu couverture" class="preview-cover-img cover-image" (error)="handleImageError($event)">
+              <span class="preview-badge" *ngIf="coverFilePreview">Nouvelle image</span>
+            </div>
+
+            <div class="cover-input-box">
+              <input #coverFileInput type="file" id="cover-file-input" accept="image/jpeg,image/png,image/webp" (change)="onCoverFileSelected($event)" hidden>
+              <button type="button" class="cover-upload-button btn-secondary" (click)="coverFileInput.click()" [disabled]="isSubmittingCare">
+                <span class="material-symbols-outlined">image</span>
+                <span>{{ coverFilePreview || existingCoverUrl ? 'Changer l\'image de couverture' : 'Choisir une photo de couverture' }}</span>
+              </button>
+              <span class="file-subtext block-hint">JPEG, PNG, WebP (max 5 Mo)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alt Text de la couverture -->
+        <div class="form-group">
+          <label for="form-photo-alt" class="form-label">Texte alternatif de la couverture (SEO)</label>
+          <input type="text" id="form-photo-alt" [(ngModel)]="formPhotoAlt" name="formPhotoAlt" class="form-control" placeholder="Description accessible de l'image de couverture" [disabled]="isSubmittingCare">
+        </div>
+
+        <!-- 2. FIELD SECTION: Galerie du soin (Section distincte sous la couverture) -->
+        <div class="form-section-box gallery-form-section">
+          <div class="section-header-row">
+            <div>
+              <h4 class="section-title">
+                <span class="material-symbols-outlined">collections</span>
+                <span>Galerie du soin</span>
+              </h4>
+              <p class="section-help-text">Additions de plusieurs photos qui seront affichées dans la fenêtre « En savoir plus ».</p>
+            </div>
+
+            <input #careFormGalleryInput type="file" id="care-form-gallery-files" accept="image/jpeg,image/png,image/webp" multiple (change)="onCareFormGallerySelected($event)" hidden>
+            
+            <button type="button" class="btn-primary sm" (click)="careFormGalleryInput.click()" [disabled]="isSubmittingCare">
+              <span class="material-symbols-outlined">add_photo_alternate</span>
+              <span>Ajouter des photos à la galerie</span>
+            </button>
+          </div>
+
+          <!-- Previews & Details List of Gallery Photos in Form -->
+          <div class="form-gallery-items-list mt-3" *ngIf="formGalleryItems.length > 0">
+            <div class="form-gallery-item-card" *ngFor="let item of formGalleryItems; let gIdx = index">
+              
+              <div class="item-thumb-box cover-image-container">
+                <img [src]="getImageUrl(item.previewUrl)" [alt]="item.altText" class="item-thumb-img cover-image" (error)="handleImageError($event)">
+                <span class="item-order-badge">#{{ gIdx + 1 }}</span>
+                <span class="cover-badge" *ngIf="item.existingPhoto?.isCover">Couverture</span>
+              </div>
+
+              <div class="item-inputs-box">
+                <div class="item-file-name" *ngIf="item.file">
+                  <span class="material-symbols-outlined">image</span>
+                  <strong>{{ item.file.name }}</strong>
+                  <span class="new-tag">Nouvelle photo</span>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col">
+                    <label class="form-label sm">Texte alternatif (SEO) <span class="required-star">*</span></label>
+                    <input type="text" [(ngModel)]="item.altText" [name]="'itemAlt_' + gIdx" class="form-control sm" placeholder="Description de la photo" required [disabled]="isSubmittingCare">
+                  </div>
+                  <div class="form-group col">
+                    <label class="form-label sm">Légende facultative</label>
+                    <input type="text" [(ngModel)]="item.caption" [name]="'itemCap_' + gIdx" class="form-control sm" placeholder="Légende facultative" [disabled]="isSubmittingCare">
+                  </div>
+                </div>
+              </div>
+
+              <div class="item-actions-box">
+                <button type="button" class="btn-action delete" (click)="removeFormGalleryItem(gIdx)" title="Retirer cette photo" [disabled]="isSubmittingCare">
+                  <span class="material-symbols-outlined">close</span>
+                  <span>Retirer</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Empty State Hint -->
+          <div class="empty-gallery-hint mt-2" *ngIf="formGalleryItems.length === 0">
+            <span class="material-symbols-outlined">photo_library</span>
+            <span>Aucune photo dans la galerie pour le moment. Cliquez sur "Ajouter des photos à la galerie" pour sélectionner vos images.</span>
+          </div>
+        </div>
+
+        <!-- Statut & Ordre -->
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="form-statut" class="form-label">Statut d'affichage <span class="required-star">*</span></label>
+            <select id="form-statut" [(ngModel)]="formStatut" name="formStatut" class="form-select" [disabled]="isSubmittingCare">
+              <option value="PUBLIE">Publié (visible du public)</option>
+              <option value="MASQUE">Masqué (masqué du public)</option>
+              <option value="ARCHIVE">Archivé (conservé pour l'historique)</option>
+            </select>
+          </div>
+
+          <div class="form-group col">
+            <label for="form-ordre" class="form-label">Ordre d'affichage</label>
+            <input type="number" id="form-ordre" [(ngModel)]="formOrdre" name="formOrdre" class="form-control" min="1" [disabled]="isSubmittingCare">
+          </div>
+        </div>
+
+        <!-- Submission Progress Notification Banner -->
+        <div class="submission-progress-box" *ngIf="isSubmittingCare && submissionProgressMessage">
+          <span class="material-symbols-outlined spinner">sync</span>
+          <span>{{ submissionProgressMessage }}</span>
+        </div>
+
+        <!-- Error & Retry Banner if Gallery upload failed after care creation -->
+        <div class="alert-error mt-3" *ngIf="failedGalleryItems.length > 0">
+          <span>Des photos n'ont pas pu être téléversées.</span>
+          <button type="button" class="btn-secondary sm ml-auto" (click)="retryFailedPhotoUploads()">
+            <span class="material-symbols-outlined">refresh</span>
+            <span>Réessayer le téléversement</span>
+          </button>
+        </div>
+
+        <!-- Modal Actions Footer -->
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeCareFormModal()" [disabled]="isSubmittingCare">Annuler</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmittingCare">
+            <span class="material-symbols-outlined" *ngIf="!isSubmittingCare">save</span>
+            <span class="material-symbols-outlined spinner" *ngIf="isSubmittingCare">sync</span>
+            <span>{{ isSubmittingCare ? 'Enregistrement en cours...' : 'Enregistrer le soin' }}</span>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- DELETE CARE CONFIRMATION MODAL -->
+  <div class="admin-modal-backdrop" *ngIf="deletingCare" (click)="cancelDeleteCare()">
+    <div class="admin-modal-card danger" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <span class="material-symbols-outlined danger-icon">warning</span>
+      <h3 class="modal-title">Confirmer la suppression</h3>
+      <p class="modal-text">
+        Voulez-vous vraiment supprimer le soin <strong>« {{ deletingCare.titre }} »</strong> ? Son album photo sera également supprimé. Cette action est irréversible.
+      </p>
+      <p class="modal-subtext">
+        Note : Si ce soin est déjà associé à des rendez-vous existants, il sera automatiquement archivé afin de préserver l'historique médical.
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cancelDeleteCare()">Annuler</button>
+        <button type="button" class="btn-danger" (click)="executeDeleteCare()" [disabled]="isDeletingCare">
+          <span class="material-symbols-outlined spinner" *ngIf="isDeletingCare">sync</span>
+          <span>{{ isDeletingCare ? 'Suppression...' : 'Supprimer définitivement' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PHOTO MODAL -->
+  <div class="admin-modal-backdrop" *ngIf="editingPhoto" (click)="closeEditPhotoModal()">
+    <div class="admin-modal-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Modifier la photo de la galerie</h3>
+        <button type="button" class="modal-close-button" aria-label="Fermer" (click)="closeEditPhotoModal(); $event.stopPropagation()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div class="form-group">
+        <label for="edit-alt-sec" class="form-label">Texte alternatif <span class="required-star">*</span></label>
+        <input type="text" id="edit-alt-sec" [(ngModel)]="editAltText" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="edit-cap-sec" class="form-label">Légende facultative</label>
+        <input type="text" id="edit-cap-sec" [(ngModel)]="editCaption" class="form-control">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeEditPhotoModal()">Annuler</button>
+        <button type="button" class="btn-primary" (click)="savePhotoEdit()" [disabled]="isUpdatingPhoto">
+          <span>Enregistrer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE SECONDARY PHOTO MODAL -->
+  <div class="admin-modal-backdrop" *ngIf="deletingPhoto" (click)="cancelDeletePhoto()">
+    <div class="admin-modal-card danger" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <span class="material-symbols-outlined danger-icon">warning</span>
+      <h3 class="modal-title">Supprimer la photo</h3>
+      <p class="modal-text">Voulez-vous vraiment supprimer cette photo de la galerie ?</p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cancelDeletePhoto()">Annuler</button>
+        <button type="button" class="btn-danger" (click)="executeDeletePhoto()" [disabled]="isDeletingPhoto">
+          <span>Supprimer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

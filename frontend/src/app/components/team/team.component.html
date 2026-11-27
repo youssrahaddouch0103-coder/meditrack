@@ -1,0 +1,69 @@
+<section class="team-section" id="equipe">
+  <div class="team-container">
+    
+    <!-- Section Header -->
+    <div class="team-header">
+      <div class="team-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">Notre équipe</span>
+      </div>
+      <h2 class="team-title">
+        Un praticien passionné à l’écoute de votre <span class="gradient-text">sourire</span>
+      </h2>
+      <p class="team-description">
+        Rigueur, bienveillance et compétences de pointe pour vous garantir un accompagnement serein et des soins personnalisés d’exception.
+      </p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="team-loading-box" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Chargement des membres de l'équipe...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="team-empty-box" *ngIf="!isLoading && teamMembers.length === 0">
+      <span class="material-symbols-outlined empty-icon">groups</span>
+      <p class="empty-text">Les membres de notre équipe médicale seront bientôt disponibles.</p>
+    </div>
+
+    <!-- Team Cards Container -->
+    <div class="team-grid" *ngIf="!isLoading && teamMembers.length > 0">
+      <div class="team-card" *ngFor="let member of teamMembers; trackBy: trackByMemberId">
+        <!-- Member Image Frame -->
+        <div class="card-image-wrapper">
+          <img 
+            [src]="getImageUrl(member.photoUrl)" 
+            [alt]="member.photoAlt || member.nomComplet" 
+            class="member-photo" 
+            (error)="handleImageError($event)"
+            loading="lazy">
+          <div class="role-pill" *ngIf="member.titre">
+            <span>{{ member.titre }}</span>
+          </div>
+        </div>
+
+        <!-- Card Content -->
+        <div class="card-content">
+          <h3 class="member-name">{{ member.nomComplet }}</h3>
+          
+          <p class="member-desc" *ngIf="member.description">{{ member.description }}</p>
+
+          <!-- Specialties tags -->
+          <div class="specialties-list" *ngIf="member.specialtiesList && member.specialtiesList.length > 0">
+            <span class="specialty-tag" *ngFor="let spec of member.specialtiesList">{{ spec }}</span>
+          </div>
+        </div>
+
+        <!-- Card Footer Action -->
+        <div class="card-footer">
+          <a href="#rendez-vous" class="btn-appointment" (click)="navigateToAppointment($event)">
+            <span class="material-symbols-outlined icon-btn">calendar_month</span>
+            <span>Prendre rendez-vous</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

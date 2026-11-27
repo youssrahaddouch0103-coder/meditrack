@@ -1,0 +1,63 @@
+<section class="why-us-section" id="avantages">
+  <div class="why-us-container">
+    
+    <!-- Left Column: Visual presentation with Floating Badge -->
+    <div class="why-us-visual">
+      <div class="visual-wrapper">
+        <div class="image-frame">
+          <img 
+            [src]="getImageUrl(settings.whyChooseUsImageUrl)" 
+            [alt]="settings.whyChooseUsImageAlt || 'Intérieur moderne du cabinet dentaire avec équipements de pointe'" 
+            class="clinic-image" 
+            loading="lazy">
+        </div>
+
+        <!-- Floating Glass Experience Badge -->
+        <div class="floating-badge">
+          <div class="badge-icon">
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div class="badge-content">
+            <span class="badge-title">Excellence & Confort</span>
+            <span class="badge-sub">Normes de soins maximales</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Header & Advantages -->
+    <div class="why-us-content">
+      
+      <!-- Section Header -->
+      <div class="why-us-header">
+        <div class="why-us-badge">
+          <span class="badge-dot"></span>
+          <span class="badge-text">Pourquoi nous choisir ?</span>
+        </div>
+        
+        <h2 class="why-us-title">
+          Votre sourire mérite une attention <span class="gradient-text">exceptionnelle</span>
+        </h2>
+        
+        <p class="why-us-description">
+          Nous mettons tout en œuvre pour vous proposer une prise en charge globale, douce et hautement qualifiée dans un cadre rassurant, conçu pour votre sérénité.
+        </p>
+      </div>
+
+      <!-- 4 Advantages Grid / Stack -->
+      <div class="advantages-list">
+        <div class="advantage-card" *ngFor="let adv of advantages">
+          <div class="advantage-icon-wrapper">
+            <span class="material-symbols-outlined advantage-icon">{{ adv.icon }}</span>
+          </div>
+          <div class="advantage-text">
+            <h3 class="advantage-title">{{ adv.title }}</h3>
+            <p class="advantage-desc">{{ adv.description }}</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>

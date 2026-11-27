@@ -1,0 +1,149 @@
+<footer class="app-footer">
+  <div class="footer-container">
+    
+    <!-- Top Footer Grid -->
+    <div class="footer-top-grid">
+      
+      <!-- Col 1: Brand & Bio -->
+      <div class="footer-col brand-col">
+        <a href="#accueil" class="footer-brand" (click)="scrollToSection('accueil', $event)">
+          <div class="brand-logo">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C8.5 2 6 4.5 6 7.5C6 10 7.5 12 8 15C8.5 18 9 22 10.5 22C11.5 22 11.8 20 12 18C12.2 20 12.5 22 13.5 22C15 22 15.5 18 16 15C16.5 12 18 10 18 7.5C18 4.5 15.5 2 12 2Z" fill="url(#footerToothGradient)" stroke="#38bdf8" stroke-width="1.5"/>
+              <defs>
+                <linearGradient id="footerToothGradient" x1="6" y1="2" x2="18" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#38bdf8" stop-opacity="0.9"/>
+                  <stop offset="1" stop-color="#14b8a6" stop-opacity="0.7"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">{{ cabinet.name }}</span>
+            <span class="brand-sub">{{ cabinet.slogan }}</span>
+          </div>
+        </a>
+
+        <p class="footer-bio">
+          {{ cabinet.presentation }}
+        </p>
+
+        <!-- Social Icons & Links -->
+        <div class="social-links">
+          <a 
+            [href]="settings.instagramUrl || 'https://www.instagram.com/yt_smile_center/'" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="social-icon instagram-icon" 
+            aria-label="Consulter l'Instagram de YT Smile Center"
+            title="Instagram @yt_smile_center">
+            <span class="material-symbols-outlined">photo_camera</span>
+          </a>
+          <a href="#" class="social-icon" (click)="preventDisabledClick($event)" aria-label="Facebook (temporaire)">
+            <span class="material-symbols-outlined">public</span>
+          </a>
+          <a href="#" class="social-icon" (click)="preventDisabledClick($event)" aria-label="LinkedIn (temporaire)">
+            <span class="material-symbols-outlined">work</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Col 2: Quick Links -->
+      <div class="footer-col links-col">
+        <h4 class="footer-col-title">Liens rapides</h4>
+        <ul class="footer-links-list">
+          <li *ngFor="let link of quickLinks">
+            <a 
+              href="#{{ link.id }}" 
+              class="footer-link" 
+              (click)="scrollToSection(link.id, $event)">
+              <span class="material-symbols-outlined link-arrow">chevron_right</span>
+              <span>{{ link.label }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Hours -->
+      <div class="footer-col hours-col">
+        <h4 class="footer-col-title">Horaires principaux</h4>
+        <ul class="hours-list">
+          <li>
+            <span class="day">Lundi – Vendredi :</span>
+            <span class="hours">{{ formatWeekdayHours() }}</span>
+          </li>
+          <li>
+            <span class="day">Samedi :</span>
+            <span class="hours">{{ formatSaturdayHours() }}</span>
+          </li>
+          <li class="closed">
+            <span class="day">Dimanche :</span>
+            <span class="hours">Fermé</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Contact Info -->
+      <div class="footer-col contact-col">
+        <h4 class="footer-col-title">Contact {{ settings.city || 'Témara' }}</h4>
+        <ul class="footer-contact-list">
+          <li *ngIf="settings.landlinePhone">
+            <span class="material-symbols-outlined icon">call</span>
+            <a [href]="'tel:' + formatPhoneRaw(settings.landlinePhone)" style="color: inherit; text-decoration: none;">
+              <span class="text">Fixe : {{ settings.landlinePhone }}</span>
+            </a>
+          </li>
+          <li>
+            <span class="material-symbols-outlined icon">phone_android</span>
+            <a [href]="formatWhatsAppLink(settings.mobilePhone)" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
+              <span class="text">Mobile : <strong>{{ settings.mobilePhone || '06 71 35 95 70' }}</strong></span>
+            </a>
+          </li>
+          <li *ngIf="settings.email">
+            <span class="material-symbols-outlined icon">mail</span>
+            <a [href]="'mailto:' + settings.email" style="color: inherit; text-decoration: none;">
+              <span class="text">{{ settings.email }}</span>
+            </a>
+          </li>
+          <li>
+            <span class="material-symbols-outlined icon">photo_camera</span>
+            <a [href]="settings.instagramUrl || 'https://www.instagram.com/yt_smile_center/'" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: none;">
+              <span class="text">{{ formatInstagramHandle(settings.instagramUrl) }}</span>
+            </a>
+          </li>
+          <li>
+            <span class="material-symbols-outlined icon">location_on</span>
+            <a [href]="settings.googleMapsUrl || 'https://maps.google.com/?q=Temara+Maroc'" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
+              <span class="text">{{ formatLocationDisplay() }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Bottom Footer Bar -->
+    <div class="footer-bottom-bar">
+      <div class="copyright">
+        © {{ currentYear }} {{ cabinet.name }}. Tous droits réservés.
+      </div>
+      <div class="legal-links">
+        <a href="#" class="legal-link" (click)="preventDisabledClick($event)">Mentions légales</a>
+        <span class="dot-separator">•</span>
+        <a href="#" class="legal-link" (click)="preventDisabledClick($event)">Politique de confidentialité</a>
+        <span class="dot-separator">•</span>
+        <a 
+          routerLink="/admin/connexion" 
+          class="admin-access-link" 
+          (click)="onAdminAccess($event)"
+          title="Accéder à l'espace d'administration"
+          aria-label="Accéder à l'espace d'administration"
+          tabindex="0">
+          <span class="material-symbols-outlined admin-icon" aria-hidden="true">lock</span>
+          <span>Espace administration</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</footer>

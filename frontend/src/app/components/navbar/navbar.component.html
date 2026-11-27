@@ -1,0 +1,108 @@
+<header class="navbar-header">
+  <div class="navbar-container">
+    <!-- Brand Logo -->
+    <a href="#accueil" class="brand-logo" (click)="setActive('accueil', $event)">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C8.5 2 6 4.5 6 7.5C6 10 7.5 12 8 15C8.5 18 9 22 10.5 22C11.5 22 11.8 20 12 18C12.2 20 12.5 22 13.5 22C15 22 15.5 18 16 15C16.5 12 18 10 18 7.5C18 4.5 15.5 2 12 2Z" fill="url(#toothGradient)" stroke="#38bdf8" stroke-width="1.5"/>
+          <defs>
+            <linearGradient id="toothGradient" x1="6" y1="2" x2="18" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#38bdf8" stop-opacity="0.9"/>
+              <stop offset="1" stop-color="#14b8a6" stop-opacity="0.7"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">{{ cabinet.name }}</span>
+        <span class="brand-sub">{{ cabinet.slogan }}</span>
+      </div>
+    </a>
+
+    <!-- Desktop Navigation Links -->
+    <nav class="desktop-nav" aria-label="Navigation principale">
+      <ul class="nav-list">
+        <li *ngFor="let item of navLinks">
+          <a 
+            href="#{{ item.id }}" 
+            class="nav-link" 
+            [class.active]="activeLink === item.id"
+            (click)="setActive(item.id, $event)">
+            {{ item.label }}
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="navbar-actions">
+      <!-- Theme Switcher Button -->
+      <button 
+        type="button" 
+        class="theme-toggle-btn" 
+        (click)="toggleTheme()" 
+        [title]="isDarkMode ? 'Passer au mode clair' : 'Passer au mode sombre'"
+        [attr.aria-label]="isDarkMode ? 'Activer le mode clair' : 'Activer le mode sombre'">
+        <span class="material-symbols-outlined" *ngIf="isDarkMode">light_mode</span>
+        <span class="material-symbols-outlined" *ngIf="!isDarkMode">dark_mode</span>
+      </button>
+
+      <a 
+        href="#rendez-vous" 
+        class="btn-appointment" 
+        (click)="navigateToAppointment($event)">
+        <span class="material-symbols-outlined icon-btn" aria-hidden="true">calendar_month</span>
+        <span>Prendre rendez-vous</span>
+      </a>
+
+      <!-- Hamburger Button (Mobile) -->
+      <button 
+        class="hamburger-btn" 
+        type="button" 
+        [class.open]="isMenuOpen" 
+        (click)="toggleMenu()"
+        aria-label="Menu principal"
+        [attr.aria-expanded]="isMenuOpen"
+        aria-controls="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="mobile-menu" id="mobile-menu" [class.show]="isMenuOpen">
+    <nav class="mobile-nav" aria-label="Navigation mobile">
+      <ul class="mobile-nav-list">
+        <li *ngFor="let item of navLinks">
+          <a 
+            href="#{{ item.id }}" 
+            class="mobile-nav-link" 
+            [class.active]="activeLink === item.id"
+            (click)="setActive(item.id, $event)">
+            {{ item.label }}
+          </a>
+        </li>
+      </ul>
+      <div class="mobile-action" style="display: flex; gap: 12px; align-items: center;">
+        <button 
+          type="button" 
+          class="theme-toggle-btn mobile-theme-btn" 
+          (click)="toggleTheme()">
+          <span class="material-symbols-outlined" *ngIf="isDarkMode">light_mode</span>
+          <span class="material-symbols-outlined" *ngIf="!isDarkMode">dark_mode</span>
+          <span>{{ isDarkMode ? 'Mode Clair' : 'Mode Sombre' }}</span>
+        </button>
+
+        <a 
+          href="#rendez-vous" 
+          class="btn-appointment w-full" 
+          (click)="navigateToAppointment($event)">
+          <span class="material-symbols-outlined icon-btn" aria-hidden="true">calendar_month</span>
+          <span>Prendre rendez-vous</span>
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,274 @@
+<section class="services-section" id="soins">
+  <div class="services-container">
+    
+    <!-- Section Header -->
+    <div class="services-header">
+      <div class="services-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">Nos Soins</span>
+      </div>
+
+      <h2 class="services-title">
+        Des soins dentaires d'excellence adaptés à vos <span class="gradient-text">besoins</span>
+      </h2>
+
+      <p class="services-description">
+        Découvrez les traitements dentaires proposés par le cabinet YT Smile Center à Témara. Chaque soin est dispensé avec rigueur et dans un confort optimal.
+      </p>
+    </div>
+
+    <!-- Services Grid (5 Cards) -->
+    <div class="services-grid">
+      <article 
+        class="service-card" 
+        *ngFor="let service of soinsList">
+        
+        <!-- Card Image Header -->
+        <div class="card-image-wrapper cover-image-container">
+          <img 
+            [src]="getImageUrl(service.imageUrl)" 
+            [alt]="service.imageAlt" 
+            class="card-image cover-image" 
+            (error)="handleImageError($event)"
+            loading="lazy">
+          <div class="card-image-overlay"></div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <h3 class="card-title">{{ service.title }}</h3>
+          <p class="card-text">{{ service.shortDescription }}</p>
+
+          <!-- Card Actions -->
+          <div class="card-actions">
+            <button 
+              type="button" 
+              class="btn-learn-more" 
+              (click)="openModal(service)"
+              [attr.aria-label]="'En savoir plus sur ' + service.title">
+              <span>En savoir plus</span>
+              <span class="material-symbols-outlined icon-arrow">arrow_forward</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="btn-quick-appointment" 
+              (click)="selectCareAndNavigate(service.title, $event)"
+              [attr.aria-label]="'Prendre rendez-vous pour ' + service.title">
+              <span class="material-symbols-outlined icon-btn">calendar_month</span>
+              <span>Prendre RDV</span>
+            </button>
+          </div>
+        </div>
+
+      </article>
+    </div>
+
+  </div>
+
+  <!-- Detail Modal -->
+  <div 
+    class="modal-backdrop" 
+    *ngIf="isModalOpen" 
+    [class.open]="isModalOpen"
+    (click)="closeModal()"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="selectedService ? 'modal-title-' + selectedService.id : null">
+    
+    <div 
+      class="modal-card" 
+      *ngIf="selectedService" 
+      (click)="$event.stopPropagation()">
+      
+      <!-- Close Button -->
+      <button 
+        type="button" 
+        class="modal-close-btn" 
+        (click)="closeModal()" 
+        aria-label="Fermer la fenêtre de détail">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <!-- Modal Content -->
+      <div class="modal-body">
+        <h3 [id]="'modal-title-' + selectedService.id" class="modal-title">
+          {{ selectedService.title }}
+        </h3>
+
+        <div class="modal-description-wrapper">
+          <p class="modal-description">
+            {{ selectedService.detailedDescription }}
+          </p>
+        </div>
+
+        <!-- SECTION: GALERIE DU SOIN -->
+        <div class="care-gallery-section">
+          <h4 class="gallery-heading">
+            <span class="material-symbols-outlined icon-gallery">photo_library</span>
+            <span>Galerie du soin</span>
+          </h4>
+
+          <!-- State 1: Loading -->
+          <div class="gallery-loading" *ngIf="isLoadingPhotos">
+            <span class="material-symbols-outlined spinner">sync</span>
+            <span>Chargement des photos du soin...</span>
+          </div>
+
+          <!-- State 2: No Photos (Empty state) -->
+          <div class="gallery-empty-box" *ngIf="!isLoadingPhotos && photosList.length === 0">
+            <span class="material-symbols-outlined empty-icon">add_a_photo</span>
+            <p class="empty-text">Les photos de ce soin seront bientôt disponibles.</p>
+          </div>
+
+          <!-- State 3: Photos Available (1 or multiple) -->
+          <div class="gallery-container" *ngIf="!isLoadingPhotos && photosList.length > 0">
+            
+            <!-- Large Main Photo Display -->
+            <div class="main-photo-wrapper" (click)="openLightbox(activePhotoIndex)" title="Cliquer pour afficher en plein écran">
+              <img 
+                [src]="getImageUrl(photosList[activePhotoIndex].imageUrl)" 
+                [alt]="photosList[activePhotoIndex].altText" 
+                class="main-photo cover-image"
+                (error)="handleImageError($event)"
+                loading="eager">
+              
+              <!-- Zoom Badge -->
+              <div class="zoom-badge">
+                <span class="material-symbols-outlined">zoom_in</span>
+                <span>Plein écran</span>
+              </div>
+
+              <!-- Cover Badge -->
+              <span class="cover-tag" *ngIf="photosList[activePhotoIndex].isCover">Photo de couverture</span>
+
+              <!-- Counter Badge (only if > 1 photo) -->
+              <div class="photo-counter-badge" *ngIf="photosList.length > 1">
+                {{ activePhotoIndex + 1 }} / {{ photosList.length }}
+              </div>
+            </div>
+
+            <!-- Optional Caption -->
+            <p class="photo-caption" *ngIf="photosList[activePhotoIndex].caption">
+              {{ photosList[activePhotoIndex].caption }}
+            </p>
+
+            <!-- Navigation Controls & Thumbnails (only if > 1 photo) -->
+            <div class="gallery-controls-block" *ngIf="photosList.length > 1">
+              
+              <!-- Prev / Next Arrow Controls -->
+              <button 
+                type="button" 
+                class="gallery-nav-btn prev-btn" 
+                (click)="prevPhoto()" 
+                aria-label="Photo précédente">
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+
+              <!-- Thumbnails Scrollable Row -->
+              <div class="thumbnails-row">
+                <div 
+                  class="thumb-item" 
+                  *ngFor="let photo of photosList; let idx = index"
+                  [class.active]="idx === activePhotoIndex"
+                  (click)="setActivePhoto(idx)">
+                  <img 
+                    [src]="getImageUrl(photo.imageUrl)" 
+                    [alt]="photo.altText" 
+                    class="thumb-image cover-image"
+                    (error)="handleImageError($event)"
+                    loading="lazy">
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                class="gallery-nav-btn next-btn" 
+                (click)="nextPhoto()" 
+                aria-label="Photo suivante">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Clinical Disclaimer Note -->
+        <div class="clinical-disclaimer-box">
+          <span class="material-symbols-outlined disclaimer-icon">info</span>
+          <p class="disclaimer-text">
+            {{ clinicalDisclaimer }}
+          </p>
+        </div>
+
+        <!-- Action Button inside Modal -->
+        <div class="modal-footer-actions">
+          <button 
+            type="button" 
+            class="btn-modal-appointment" 
+            (click)="selectCareAndNavigate(selectedService.title, $event)">
+            <span class="material-symbols-outlined icon-btn">calendar_month</span>
+            <span>Prendre rendez-vous pour ce soin</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LIGHTBOX FULLSCREEN MODAL -->
+  <div 
+    class="lightbox-backdrop" 
+    *ngIf="isLightboxOpen && photosList.length > 0"
+    (click)="closeLightbox()"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Visionneuse plein écran">
+    
+    <button 
+      type="button" 
+      class="lightbox-close-btn" 
+      (click)="closeLightbox()" 
+      aria-label="Fermer le plein écran">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+
+    <!-- Prev Lightbox Button -->
+    <button 
+      type="button" 
+      class="lightbox-arrow prev" 
+      *ngIf="photosList.length > 1"
+      (click)="prevLightboxPhoto($event)" 
+      aria-label="Photo précédente">
+      <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+
+    <!-- Center Enlarged Photo Card -->
+    <div class="lightbox-content" (click)="$event.stopPropagation()">
+      <img 
+        [src]="getImageUrl(photosList[lightboxIndex].imageUrl)" 
+        [alt]="photosList[lightboxIndex].altText" 
+        class="lightbox-image cover-image"
+        (error)="handleImageError($event)">
+      
+      <div class="lightbox-info-bar">
+        <span class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ photosList.length }}</span>
+        <p class="lightbox-caption" *ngIf="photosList[lightboxIndex].caption">
+          {{ photosList[lightboxIndex].caption }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Next Lightbox Button -->
+    <button 
+      type="button" 
+      class="lightbox-arrow next" 
+      *ngIf="photosList.length > 1"
+      (click)="nextLightboxPhoto($event)" 
+      aria-label="Photo suivante">
+      <span class="material-symbols-outlined">chevron_right</span>
+    </button>
+  </div>
+
+</section>
