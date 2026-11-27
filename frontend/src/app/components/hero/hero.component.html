@@ -1,0 +1,70 @@
+<section class="hero-section" id="accueil">
+  <div class="hero-container">
+    <!-- Left Column: Content -->
+    <div class="hero-content">
+      <!-- Badge -->
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">{{ cabinet.slogan }}</span>
+      </div>
+
+      <!-- Title -->
+      <h1 class="hero-title">
+        <span class="gradient-text">{{ cabinet.name }}</span><br>
+        Soins dentaires modernes à {{ cabinet.city }}
+      </h1>
+
+      <!-- Description -->
+      <p class="hero-description">
+        {{ cabinet.presentation }}
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="hero-actions">
+        <a href="#rendez-vous" class="btn-primary">
+          <span class="material-symbols-outlined">calendar_add_on</span>
+          <span>Prendre rendez-vous</span>
+        </a>
+
+        <a href="#soins" class="btn-secondary">
+          <span>Découvrir nos soins</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </a>
+      </div>
+
+      <!-- Highlights / Trust Items -->
+      <div class="hero-highlights">
+        <div class="highlight-item" *ngFor="let item of heroHighlights">
+          <div class="highlight-icon">
+            <span class="material-symbols-outlined">{{ item.icon }}</span>
+          </div>
+          <span class="highlight-title">{{ item.title }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Visual & Floating Card -->
+    <div class="hero-visual">
+      <div class="visual-wrapper">
+        <div class="image-frame">
+          <img 
+            [src]="getImageUrl(settings.heroImageUrl)" 
+            [alt]="settings.heroImageAlt || 'Cabinet dentaire YT Smile Center à Témara'" 
+            class="hero-image" 
+            loading="eager">
+        </div>
+
+        <!-- Floating Glass Card -->
+        <div class="floating-card">
+          <div class="card-icon">
+            <span class="material-symbols-outlined">family_restroom</span>
+          </div>
+          <div class="card-text">
+            <span class="card-title">Des soins adaptés</span>
+            <span class="card-subtitle">à toute la famille</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

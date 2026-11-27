@@ -1,0 +1,630 @@
+<div class="admin-settings-page">
+  
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="title-with-badge">
+        <span class="material-symbols-outlined header-icon">settings_suggest</span>
+        <h1>Paramètres du Cabinet & Sécurité Admin</h1>
+        <span class="status-badge">Configuration dynamique</span>
+      </div>
+      <p class="header-subtitle">
+        Gérez le contenu public du cabinet dentaire ainsi que les accès sécurisés du compte administrateur.
+      </p>
+    </div>
+
+    <!-- Header Action Buttons (uniquement si section cabinet active) -->
+    <div class="header-actions" *ngIf="activeSection === 'cabinet'">
+      <button 
+        type="button" 
+        class="btn-secondary" 
+        (click)="cancelModifications()" 
+        [disabled]="isSaving || isLoading">
+        <span class="material-symbols-outlined">restart_alt</span>
+        <span>Annuler</span>
+      </button>
+      
+      <button 
+        type="button" 
+        class="btn-primary" 
+        (click)="saveSettings()" 
+        [disabled]="isSaving || isLoading">
+        <span class="material-symbols-outlined" *ngIf="!isSaving">save</span>
+        <span class="spinner-small" *ngIf="isSaving"></span>
+        <span>{{ isSaving ? 'Enregistrement...' : 'Enregistrer les modifications' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation par onglet -->
+  <div class="section-nav-tabs">
+    <button 
+      type="button" 
+      class="nav-tab-btn" 
+      [class.active]="activeSection === 'cabinet'" 
+      (click)="activeSection = 'cabinet'">
+      <span class="material-symbols-outlined">storefront</span>
+      <span>Informations & Contenu du cabinet</span>
+    </button>
+    <button 
+      type="button" 
+      class="nav-tab-btn" 
+      [class.active]="activeSection === 'security'" 
+      (click)="activeSection = 'security'">
+      <span class="material-symbols-outlined">admin_panel_settings</span>
+      <span>Sécurité & Compte Admin</span>
+    </button>
+  </div>
+
+  <!-- Feedback Banners -->
+  <div class="alert alert-success" *ngIf="successMessage" role="status">
+    <span class="material-symbols-outlined">check_circle</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="errorMessage" role="alert">
+    <span class="material-symbols-outlined">error</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement de la configuration...</p>
+  </div>
+
+  <!-- SECTION 1 : CONTENU ET INFORMATIONS DU CABINET -->
+  <div class="settings-form-container" *ngIf="!isLoading && activeSection === 'cabinet'">
+
+    <!-- BLOC 1 : PHOTOS DU SITE -->
+    <section class="settings-card-block">
+      <div class="block-header">
+        <span class="material-symbols-outlined block-icon">collections</span>
+        <div class="block-title-box">
+          <h2>Photos du site</h2>
+          <p>Gérez les trois visuels majeurs présentés sur les sections publiques.</p>
+        </div>
+      </div>
+
+      <div class="photos-grid">
+        
+        <!-- 1. Photo Accueil / Hero -->
+        <div class="photo-card">
+          <div class="photo-card-header">
+            <h3>1. Photo de la section « Accueil »</h3>
+            <span class="photo-tag">En-tête principal</span>
+          </div>
+
+          <div class="photo-preview-box">
+            <img 
+              [src]="heroPreview || getImageUrl(settings.heroImageUrl, 'assets/hero-dentist.png')" 
+              alt="Aperçu photo d'accueil" 
+              class="photo-preview-img"
+              (error)="handleImageError($event, 'assets/hero-dentist.png')">
+          </div>
+
+          <div class="photo-controls">
+            <label class="btn-picker-label">
+              <span class="material-symbols-outlined">upload</span>
+              <span>{{ heroFile ? 'Changer le fichier' : 'Choisir une photo' }}</span>
+              <input 
+                type="file" 
+                accept="image/jpeg,image/png,image/webp" 
+                (change)="onPhotoSelected($event, 'hero')" 
+                class="hidden-file-input">
+            </label>
+
+            <button 
+              type="button" 
+              class="btn-cancel-file" 
+              *ngIf="heroFile" 
+              (click)="cancelPhotoSelection('hero')" 
+              title="Annuler la sélection">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <span class="file-hint" *ngIf="heroFile">Nouveau fichier sélectionné : {{ heroFile.name }}</span>
+
+          <div class="form-group margin-top-1">
+            <label class="form-label">Texte alternatif (Alt)</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="settings.heroImageAlt" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. Cabinet dentaire YT Smile Center à Témara">
+          </div>
+        </div>
+
+        <!-- 2. Photo Pourquoi nous choisir -->
+        <div class="photo-card">
+          <div class="photo-card-header">
+            <h3>2. Photo « Pourquoi nous choisir »</h3>
+            <span class="photo-tag">Section Avantages</span>
+          </div>
+
+          <div class="photo-preview-box">
+            <img 
+              [src]="whyPreview || getImageUrl(settings.whyChooseUsImageUrl, 'assets/why-us-clinic.png')" 
+              alt="Aperçu photo pourquoi nous choisir" 
+              class="photo-preview-img"
+              (error)="handleImageError($event, 'assets/why-us-clinic.png')">
+          </div>
+
+          <div class="photo-controls">
+            <label class="btn-picker-label">
+              <span class="material-symbols-outlined">upload</span>
+              <span>{{ whyFile ? 'Changer le fichier' : 'Choisir une photo' }}</span>
+              <input 
+                type="file" 
+                accept="image/jpeg,image/png,image/webp" 
+                (change)="onPhotoSelected($event, 'why')" 
+                class="hidden-file-input">
+            </label>
+
+            <button 
+              type="button" 
+              class="btn-cancel-file" 
+              *ngIf="whyFile" 
+              (click)="cancelPhotoSelection('why')" 
+              title="Annuler la sélection">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <span class="file-hint" *ngIf="whyFile">Nouveau fichier sélectionné : {{ whyFile.name }}</span>
+
+          <div class="form-group margin-top-1">
+            <label class="form-label">Texte alternatif (Alt)</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="settings.whyChooseUsImageAlt" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. Intérieur moderne du cabinet dentaire">
+          </div>
+        </div>
+
+        <!-- 3. Photo À propos du cabinet -->
+        <div class="photo-card">
+          <div class="photo-card-header">
+            <h3>3. Photo « À propos du cabinet »</h3>
+            <span class="photo-tag">Présentation</span>
+          </div>
+
+          <div class="photo-preview-box">
+            <img 
+              [src]="aboutPreview || getImageUrl(settings.aboutImageUrl, 'assets/about-cabinet.png')" 
+              alt="Aperçu photo à propos" 
+              class="photo-preview-img"
+              (error)="handleImageError($event, 'assets/about-cabinet.png')">
+          </div>
+
+          <div class="photo-controls">
+            <label class="btn-picker-label">
+              <span class="material-symbols-outlined">upload</span>
+              <span>{{ aboutFile ? 'Changer le fichier' : 'Choisir une photo' }}</span>
+              <input 
+                type="file" 
+                accept="image/jpeg,image/png,image/webp" 
+                (change)="onPhotoSelected($event, 'about')" 
+                class="hidden-file-input">
+            </label>
+
+            <button 
+              type="button" 
+              class="btn-cancel-file" 
+              *ngIf="aboutFile" 
+              (click)="cancelPhotoSelection('about')" 
+              title="Annuler la sélection">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <span class="file-hint" *ngIf="aboutFile">Nouveau fichier sélectionné : {{ aboutFile.name }}</span>
+
+          <div class="form-group margin-top-1">
+            <label class="form-label">Texte alternatif (Alt)</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="settings.aboutImageAlt" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. Espace de soin lumineux du cabinet">
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- BLOC 2 : COORDONNÉES ET RÉSEAUX SOCIAUX -->
+    <section class="settings-card-block">
+      <div class="block-header">
+        <span class="material-symbols-outlined block-icon">contact_phone</span>
+        <div class="block-title-box">
+          <h2>Coordonnées et réseaux sociaux</h2>
+          <p>Mettez à jour les moyens de contact du cabinet affichés sur les liens cliquables et le pied de page.</p>
+        </div>
+      </div>
+
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label class="form-label">Téléphone fixe</label>
+          <div class="input-icon-box">
+            <span class="material-symbols-outlined field-icon">call</span>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="settings.landlinePhone" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. 05 37 61 00 84">
+          </div>
+          <span class="field-hint">Affiché sur le site et cliquable via tel:</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Téléphone mobile / WhatsApp</label>
+          <div class="input-icon-box">
+            <span class="material-symbols-outlined field-icon">smartphone</span>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="settings.mobilePhone" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. 06 71 35 95 70">
+          </div>
+          <span class="field-hint">Conservé en gras pour la mise en valeur des urgences.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Adresse e-mail du cabinet (Public)</label>
+          <div class="input-icon-box">
+            <span class="material-symbols-outlined field-icon">mail</span>
+            <input 
+              type="email" 
+              class="form-control" 
+              [(ngModel)]="settings.email" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. contact@cabinet.ma">
+          </div>
+          <span class="field-hint">Email public affiché sur le site (Indépendant du compte admin).</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Lien Instagram Officiel</label>
+          <div class="input-icon-box">
+            <span class="material-symbols-outlined field-icon">photo_camera</span>
+            <input 
+              type="url" 
+              class="form-control" 
+              [(ngModel)]="settings.instagramUrl" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. https://www.instagram.com/yt_smile_center/">
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Adresse complète</label>
+          <div class="input-icon-box">
+            <span class="material-symbols-outlined field-icon">home_pin</span>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="settings.addressLine" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. Place El Hedim / Avenue Moulay Youssef">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ville</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="settings.city" 
+            (ngModelChange)="markAsDirty()" 
+            placeholder="ex. Témara">
+        </div>
+
+        <div class="form-group-flex">
+          <div class="sub-field">
+            <label class="form-label">Code postal</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="settings.postalCode" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. 12000">
+          </div>
+          <div class="sub-field">
+            <label class="form-label">Pays</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="settings.country" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. Maroc">
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- BLOC 3 : HORAIRES ET LOCALISATION -->
+    <section class="settings-card-block">
+      <div class="block-header">
+        <span class="material-symbols-outlined block-icon">schedule</span>
+        <div class="block-title-box">
+          <h2>Horaires et localisation</h2>
+          <p>Éditez les plages d'ouverture hebdomadaires et la carte Google Maps du cabinet.</p>
+        </div>
+      </div>
+
+      <h3 class="sub-section-title">Horaires d'ouverture par jour</h3>
+      <div class="schedule-editor-table">
+        <div class="schedule-editor-row">
+          <span class="day-label">Lundi</span>
+          <div class="hours-inputs">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.mondayMorning" (ngModelChange)="markAsDirty()" placeholder="Matin (ex. 09:30 - 13:00)">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.mondayAfternoon" (ngModelChange)="markAsDirty()" placeholder="Après-midi (ex. 15:30 - 19:00)">
+          </div>
+        </div>
+
+        <div class="schedule-editor-row">
+          <span class="day-label">Mardi</span>
+          <div class="hours-inputs">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.tuesdayMorning" (ngModelChange)="markAsDirty()" placeholder="Matin (ex. 09:30 - 13:00)">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.tuesdayAfternoon" (ngModelChange)="markAsDirty()" placeholder="Après-midi (ex. 15:30 - 19:00)">
+          </div>
+        </div>
+
+        <div class="schedule-editor-row">
+          <span class="day-label">Mercredi</span>
+          <div class="hours-inputs">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.wednesdayMorning" (ngModelChange)="markAsDirty()" placeholder="Matin (ex. 09:30 - 13:00)">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.wednesdayAfternoon" (ngModelChange)="markAsDirty()" placeholder="Après-midi (ex. 15:30 - 19:00)">
+          </div>
+        </div>
+
+        <div class="schedule-editor-row">
+          <span class="day-label">Jeudi</span>
+          <div class="hours-inputs">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.thursdayMorning" (ngModelChange)="markAsDirty()" placeholder="Matin (ex. 09:30 - 13:00)">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.thursdayAfternoon" (ngModelChange)="markAsDirty()" placeholder="Après-midi (ex. 15:30 - 19:00)">
+          </div>
+        </div>
+
+        <div class="schedule-editor-row">
+          <span class="day-label">Vendredi</span>
+          <div class="hours-inputs">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.fridayMorning" (ngModelChange)="markAsDirty()" placeholder="Matin (ex. 09:30 - 13:00)">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.fridayAfternoon" (ngModelChange)="markAsDirty()" placeholder="Après-midi (ex. 15:30 - 19:00)">
+          </div>
+        </div>
+
+        <div class="schedule-editor-row">
+          <span class="day-label">Samedi</span>
+          <div class="hours-inputs">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.saturdayMorning" (ngModelChange)="markAsDirty()" placeholder="Matin (ex. 09:30 - 13:00)">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.saturdayAfternoon" (ngModelChange)="markAsDirty()" placeholder="Après-midi (ex. Fermé)">
+          </div>
+        </div>
+
+        <div class="schedule-editor-row">
+          <span class="day-label">Dimanche</span>
+          <div class="hours-inputs">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.sundayMorning" (ngModelChange)="markAsDirty()" placeholder="Matin (ex. Fermé)">
+            <input type="text" class="form-control time-input" [(ngModel)]="settings.sundayAfternoon" (ngModelChange)="markAsDirty()" placeholder="Après-midi (ex. Fermé)">
+          </div>
+        </div>
+      </div>
+
+      <h3 class="sub-section-title margin-top-2">Localisation & Carte Google Maps</h3>
+      <div class="form-grid-2col">
+        <div class="form-group full-width">
+          <label class="form-label">Lien Google Maps (Itinéraire & Carte)</label>
+          <div class="input-icon-box">
+            <span class="material-symbols-outlined field-icon">map</span>
+            <input 
+              type="url" 
+              class="form-control" 
+              [(ngModel)]="settings.googleMapsUrl" 
+              (ngModelChange)="markAsDirty()" 
+              placeholder="ex. https://maps.app.goo.gl/SWdXYeqNsKtVG5yn6">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Action Buttons -->
+    <div class="bottom-actions">
+      <button 
+        type="button" 
+        class="btn-secondary" 
+        (click)="cancelModifications()" 
+        [disabled]="isSaving || isLoading">
+        <span class="material-symbols-outlined">restart_alt</span>
+        <span>Annuler</span>
+      </button>
+
+      <button 
+        type="button" 
+        class="btn-primary" 
+        (click)="saveSettings()" 
+        [disabled]="isSaving || isLoading">
+        <span class="material-symbols-outlined" *ngIf="!isSaving">save</span>
+        <span class="spinner-small" *ngIf="isSaving"></span>
+        <span>{{ isSaving ? 'Enregistrement...' : 'Enregistrer les modifications' }}</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- SECTION 2 : SÉCURITÉ DU COMPTE ADMINISTRATEUR -->
+  <div class="security-form-container" *ngIf="!isLoading && activeSection === 'security'">
+    
+    <div class="alert alert-success" *ngIf="securitySuccess">
+      <span class="material-symbols-outlined">check_circle</span>
+      <span>{{ securitySuccess }}</span>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="securityError">
+      <span class="material-symbols-outlined">error</span>
+      <span>{{ securityError }}</span>
+    </div>
+
+    <section class="settings-card-block">
+      <div class="block-header">
+        <span class="material-symbols-outlined block-icon security-icon">shield</span>
+        <div class="block-title-box">
+          <h2>Compte Administrateur & Sécurité</h2>
+          <p>Gérez vos identifiants administrateurs en BDD PostgreSQL. Ces informations sont totalement indépendantes de l'adresse email publique du cabinet.</p>
+        </div>
+      </div>
+
+      <div class="security-cards-grid">
+        
+        <!-- Carte 1 : Email de connexion -->
+        <div class="security-card">
+          <div class="sec-card-top">
+            <div class="sec-icon-circle">
+              <span class="material-symbols-outlined">mail</span>
+            </div>
+            <div class="sec-info">
+              <h3>Email de connexion admin</h3>
+              <p class="sec-desc">Adresse principale de connexion au dashboard</p>
+              <div class="sec-value">{{ adminAccount?.loginEmail || 'Non configuré' }}</div>
+            </div>
+          </div>
+          <button type="button" class="btn-sec-action" (click)="openLoginEmailModal()">
+            <span class="material-symbols-outlined">edit</span>
+            <span>Modifier l'email</span>
+          </button>
+        </div>
+
+        <!-- Carte 2 : Mot de passe -->
+        <div class="security-card">
+          <div class="sec-card-top">
+            <div class="sec-icon-circle blue">
+              <span class="material-symbols-outlined">lock</span>
+            </div>
+            <div class="sec-info">
+              <h3>Mot de passe administrateur</h3>
+              <p class="sec-desc">Stocké sous forme de hash sécurisé avec BCrypt</p>
+              <div class="sec-value">••••••••••••••••</div>
+            </div>
+          </div>
+          <button type="button" class="btn-sec-action btn-blue" (click)="openPasswordModal()">
+            <span class="material-symbols-outlined">password</span>
+            <span>Changer le mot de passe</span>
+          </button>
+        </div>
+
+        <!-- Carte 3 : Codes de récupération d'urgence -->
+        <div class="security-card highlight-card">
+          <div class="sec-card-top">
+            <div class="sec-icon-circle red">
+              <span class="material-symbols-outlined">vpn_key</span>
+            </div>
+            <div class="sec-info">
+              <h3>Codes de récupération d'urgence</h3>
+              <p class="sec-desc">Dernier recours si aucun e-mail n'est accessible</p>
+              <div class="sec-value">
+                <span class="badge-codes">{{ adminAccount?.activeRecoveryCodesCount || 0 }} codes d'urgence actifs</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-sec-action btn-red" (click)="generateEmergencyCodes()">
+            <span class="material-symbols-outlined">autorenew</span>
+            <span>Générer 10 nouveaux codes</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL 1 : MODIFICATION EMAIL DE CONNEXION -->
+  <div class="modal-overlay" *ngIf="showLoginEmailModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Modifier l'email de connexion admin</h2>
+        <button type="button" class="btn-close" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Nouvel email de connexion</label>
+          <input type="email" class="form-control" [(ngModel)]="loginEmailForm.newLoginEmail" placeholder="nouveau.login@exemple.fr">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mot de passe actuel (Validation de sécurité)</label>
+          <input type="password" class="form-control" [(ngModel)]="loginEmailForm.currentPassword" placeholder="••••••••">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModals()">Annuler</button>
+        <button type="button" class="btn-primary" (click)="submitUpdateLoginEmail()" [disabled]="isSecuritySubmitting">
+          <span>{{ isSecuritySubmitting ? 'Mise à jour...' : 'Enregistrer' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3 : MODIFICATION MOT DE PASSE -->
+  <div class="modal-overlay" *ngIf="showPasswordModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Changer le mot de passe administrateur</h2>
+        <button type="button" class="btn-close" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Mot de passe actuel</label>
+          <input type="password" class="form-control" [(ngModel)]="passwordForm.currentPassword" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nouveau mot de passe</label>
+          <input type="password" class="form-control" [(ngModel)]="passwordForm.newPassword" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmer le nouveau mot de passe</label>
+          <input type="password" class="form-control" [(ngModel)]="passwordForm.confirmPassword" placeholder="••••••••">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModals()">Annuler</button>
+        <button type="button" class="btn-primary" (click)="submitUpdatePassword()" [disabled]="isSecuritySubmitting">
+          <span>{{ isSecuritySubmitting ? 'Modification...' : 'Modifier le mot de passe' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4 : AFFICHAGE DES 10 CODES D'URGENCE GÉNÉRÉS -->
+  <div class="modal-overlay" *ngIf="showEmergencyCodesModal">
+    <div class="modal-card modal-large">
+      <div class="modal-header header-warning">
+        <span class="material-symbols-outlined warning-icon">warning</span>
+        <h2>Vos 10 codes de récupération d'urgence</h2>
+        <button type="button" class="btn-close" (click)="closeModals()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-warning-text">{{ generatedWarning }}</p>
+        
+        <div class="codes-display-grid">
+          <div class="code-item" *ngFor="let code of generatedCodes; let i = index">
+            <span class="code-num">{{ i + 1 }}.</span>
+            <span class="code-text">{{ code }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="copyEmergencyCodes()">
+          <span class="material-symbols-outlined">content_copy</span>
+          <span>{{ copiedCodes ? 'Codes copiés !' : 'Copier tous les codes' }}</span>
+        </button>
+        <button type="button" class="btn-primary" (click)="closeModals()">J'ai bien conservé mes codes</button>
+      </div>
+    </div>
+  </div>
+
+</div>

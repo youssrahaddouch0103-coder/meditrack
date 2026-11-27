@@ -1,0 +1,707 @@
+/* ==========================================================================
+   Global Theme & Styles - Cabinet Dentaire
+   Design System: Midnight Blue (Dark) & High-Contrast Light Theme
+   ========================================================================== */
+
+:root {
+  --bg-primary: #0b1329;
+  --bg-secondary: #131e3a;
+  --bg-surface: rgba(255, 255, 255, 0.04);
+  --bg-surface-hover: rgba(255, 255, 255, 0.08);
+  
+  --color-brand-cyan: #38bdf8;
+  --color-brand-teal: #14b8a6;
+  --color-brand-blue: #0284c7;
+  --color-accent-purple: #818cf8;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --border-glass-bright: rgba(56, 189, 248, 0.35);
+  
+  --shadow-glow: 0 0 35px rgba(56, 189, 248, 0.3);
+  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: radial-gradient(circle at 15% 15%, #162447 0%, #0b1329 55%, #050a18 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ==========================================================================
+   LIGHT THEME OVERRIDES (PRECISE HIGH-CONTRAST TARGETING)
+   ========================================================================== */
+html.light-theme, body.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f5f9;
+  
+  --color-brand-cyan: #0284c7;
+  --color-brand-teal: #0d9488;
+  --color-brand-blue: #0369a1;
+  --color-accent-purple: #6366f1;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  --border-glass: rgba(15, 23, 42, 0.1);
+  --border-glass-bright: rgba(2, 132, 199, 0.35);
+  
+  --shadow-glow: 0 0 30px rgba(2, 132, 199, 0.15);
+  --shadow-card: 0 15px 35px -10px rgba(15, 23, 42, 0.08);
+
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light-theme {
+
+  /* --- Navbar --- */
+  .navbar-header {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+
+    .brand-name { color: #0f172a !important; }
+    .brand-sub { color: #0284c7 !important; }
+    .nav-link { 
+      color: #334155 !important; 
+      &:hover, &.active { color: #0284c7 !important; }
+    }
+    .hamburger-btn { 
+      background: #f1f5f9 !important; 
+      border-color: #cbd5e1 !important; 
+      .bar { background-color: #0f172a !important; } 
+    }
+    .mobile-menu { background: rgba(255, 255, 255, 0.98) !important; border-bottom-color: #e2e8f0 !important; }
+    .mobile-nav-link { 
+      color: #334155 !important;
+      &:hover, &.active { color: #0284c7 !important; }
+    }
+  }
+
+  .theme-toggle-btn {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #0284c7 !important;
+    &:hover { background: #e2e8f0 !important; }
+  }
+
+  /* --- Hero Section --- */
+  .hero-section {
+    .hero-title { color: #0f172a !important; }
+    .hero-description { color: #475569 !important; }
+    .btn-secondary {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+      &:hover { background: #f1f5f9 !important; border-color: #0284c7 !important; }
+    }
+    .highlight-item {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      .highlight-title { color: #1e293b !important; }
+    }
+    .floating-card {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(2, 132, 199, 0.3) !important;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1) !important;
+      .card-title { color: #0f172a !important; }
+    }
+  }
+
+  /* --- Section Titles & Descriptions --- */
+  .services-title, .why-us-title, .about-title, .team-title, .testimonials-title, .appointment-title, .contact-title {
+    color: #0f172a !important;
+  }
+  .services-description, .why-us-description, .about-description, .team-description, .testimonials-description, .appointment-description, .contact-description {
+    color: #475569 !important;
+  }
+
+  /* --- 1. SECTION « NOTRE CABINET » (about) --- */
+  .about-section {
+    .about-paragraph { color: #475569 !important; }
+    
+    .feature-item {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      
+      .feature-icon-box {
+        background: rgba(56, 189, 248, 0.1) !important;
+        border-color: rgba(56, 189, 248, 0.2) !important;
+      }
+      .feature-icon {
+        color: #0284c7 !important;
+      }
+      .feature-title {
+        color: #334155 !important;
+      }
+    }
+
+    .floating-glass-card {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(2, 132, 199, 0.3) !important;
+      .card-main-text { color: #0f172a !important; }
+    }
+  }
+
+  /* --- 2. SECTION « NOTRE ÉQUIPE » (team) --- */
+  .team-section {
+    .team-card {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+
+      .member-name { color: #0f172a !important; }
+      .member-desc { color: #475569 !important; }
+
+      .specialty-tag {
+        color: #475569 !important;
+        background: #EAF6FC !important;
+        border: 1px solid #BAE6FD !important;
+      }
+
+      .btn-appointment {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+
+        .icon-btn {
+          color: #ffffff !important;
+        }
+
+        &:hover {
+          background: linear-gradient(135deg, #0369a1 0%, #0d9488 100%) !important;
+        }
+      }
+    }
+  }
+
+  /* ==========================================================================
+     SECTION « CONTACTEZ-NOUS » — THÈME CLAIR (HIGH CONTRAST & LISIBILITÉ PERFECT)
+     ========================================================================== */
+  .contact-section {
+    color: #17233c !important;
+
+    .contact-title {
+      color: #0b1f3a !important;
+    }
+
+    .contact-description {
+      color: #34445e !important;
+    }
+
+    .contact-badge {
+      background: rgba(2, 132, 199, 0.08) !important;
+      border-color: rgba(2, 132, 199, 0.25) !important;
+
+      .badge-text {
+        color: #0284c7 !important;
+      }
+    }
+
+    /* Cartes Coordonnées & Horaires */
+    .info-card, .schedule-card {
+      background: #ffffff !important;
+      border: 1px solid #dce7ef !important;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+
+      .card-subtitle-heading, .schedule-title {
+        color: #0b1f3a !important;
+      }
+
+      .item-label {
+        color: #0b1f3a !important;
+        font-weight: 700 !important;
+      }
+
+      .item-value-placeholder {
+        color: #34445e !important;
+      }
+
+      .item-address-link {
+        color: #34445e !important;
+
+        span {
+          color: #34445e !important;
+        }
+
+        &:hover, &:hover span {
+          color: #0284c7 !important;
+        }
+      }
+
+      .info-icon-wrapper, .schedule-icon-wrapper {
+        background: rgba(2, 132, 199, 0.08) !important;
+        border: 1px solid rgba(2, 132, 199, 0.2) !important;
+        color: #14a6a6 !important;
+
+        .icon, .material-symbols-outlined {
+          color: #14a6a6 !important;
+        }
+      }
+
+      .open-icon {
+        color: #0284c7 !important;
+      }
+
+      .btn-disabled-action {
+        color: #64748b !important;
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+      }
+    }
+
+    /* Tableau des Horaires */
+    .schedule-table {
+      .schedule-row {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+
+        .day-name {
+          color: #34445e !important;
+        }
+
+        .day-hours {
+          color: #0b1f3a !important;
+          font-weight: 700 !important;
+        }
+
+        &.day-closed {
+          background: #fef2f2 !important;
+          border-color: #fecaca !important;
+
+          .day-name {
+            color: #991b1b !important;
+          }
+
+          .badge-closed {
+            color: #dc2626 !important;
+            font-weight: 700 !important;
+          }
+        }
+      }
+    }
+
+    /* Bloc Urgences */
+    .emergency-box {
+      background: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+
+      .emergency-icon {
+        color: #dc2626 !important;
+      }
+
+      .emergency-title {
+        color: #991b1b !important;
+      }
+
+      .emergency-text {
+        color: #34445e !important;
+      }
+    }
+
+    /* Formulaire de Contact */
+    .form-card {
+      background: #ffffff !important;
+      border: 1px solid #dce7ef !important;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+
+      .form-title {
+        color: #0b1f3a !important;
+      }
+
+      .form-subtitle {
+        color: #34445e !important;
+      }
+
+      .form-label {
+        color: #0b1f3a !important;
+        font-weight: 600 !important;
+      }
+
+      .required-star {
+        color: #0284c7 !important;
+      }
+
+      .optional-tag {
+        color: #64748b !important;
+      }
+
+      .field-icon {
+        color: #64748b !important;
+      }
+
+      .form-control {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+
+        &::placeholder {
+          color: #94a3b8 !important;
+        }
+
+        &:focus {
+          background: #ffffff !important;
+          border-color: #0284c7 !important;
+          box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+
+          + .field-icon {
+            color: #0284c7 !important;
+          }
+        }
+      }
+
+      .select-control option {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+      }
+
+      .checkbox-custom {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+
+      .checkbox-input:checked ~ .checkbox-custom {
+        background: #0284c7 !important;
+        border-color: #0284c7 !important;
+      }
+
+      .checkbox-text {
+        color: #34445e !important;
+      }
+    }
+
+    /* Carte Google Maps & Barre d'adresse */
+    .location-map-card {
+      background: #ffffff !important;
+      border: 1px solid #dce7ef !important;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+    }
+
+    .map-details-bar {
+      background: #ffffff !important;
+      border-top: 1px solid #e2e8f0 !important;
+
+      .address-link {
+        color: #0b1f3a !important;
+
+        .address-text {
+          color: #0b1f3a !important;
+          font-weight: 700 !important;
+        }
+
+        .address-icon {
+          color: #14a6a6 !important;
+        }
+
+        &:hover {
+          color: #0284c7 !important;
+
+          .address-text {
+            color: #0284c7 !important;
+          }
+        }
+      }
+
+      .address-help-text {
+        color: #64748b !important;
+      }
+
+      .btn-directions {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  /* --- 4. BLOC « INFORMATIONS & HORAIRES » (section rendez-vous) --- */
+  .appointment-section {
+    .appointment-info-card {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+
+      .info-card-title {
+        color: #0F172A !important;
+      }
+
+      .info-card-subtitle {
+        color: #475569 !important;
+      }
+
+      .info-label {
+        color: #0d9488 !important; /* Conserver la couleur turquoise actuelle */
+      }
+
+      .info-value {
+        color: #334155 !important;
+      }
+
+      .info-sub {
+        color: #475569 !important;
+      }
+
+      /* Prise en charge prioritaire sous Urgences dentaires */
+      .info-item:nth-child(4) .info-value, 
+      .info-item .info-icon-wrapper:has(.material-symbols-outlined:contains('emergency')) + .info-text .info-value {
+        color: #DC2626 !important;
+      }
+
+      .reassurance-box {
+        background: #f0fdf4 !important;
+        border: 1px solid #86efac !important;
+        color: #166534 !important;
+
+        .check-icon {
+          color: #166534 !important;
+        }
+      }
+    }
+  }
+
+  /* --- 5. BLOC « LOCALISATION DU CABINET » (section contact) --- */
+  .location-section {
+    .location-map-card {
+      background: #ffffff !important;
+      border: 1px dashed #cbd5e1 !important;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.06) !important;
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(2, 132, 199, 0.06) 0%, transparent 60%),
+        linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px) !important;
+
+      .map-placeholder-title {
+        color: #0F172A !important;
+      }
+
+      .map-placeholder-text {
+        color: #475569 !important;
+      }
+
+      .map-placeholder-badge {
+        background: #e0f2fe !important;
+        border: 1px solid #bae6fd !important;
+        color: #0284c7 !important;
+
+        .badge-dot {
+          background-color: #0284c7 !important;
+          box-shadow: 0 0 8px #0284c7 !important;
+        }
+      }
+
+      .map-icon-circle {
+        background: linear-gradient(135deg, rgba(2, 132, 199, 0.15), rgba(13, 148, 136, 0.15)) !important;
+        border-color: rgba(2, 132, 199, 0.3) !important;
+        box-shadow: 0 0 20px rgba(2, 132, 199, 0.15) !important;
+      }
+
+      .map-icon {
+        color: #0284c7 !important;
+      }
+    }
+  }
+
+  /* Services & Why Choose Us Cards */
+  .service-card, .advantage-card, .testimonial-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+
+    .card-title, .advantage-title, .author-name {
+      color: #0f172a !important;
+    }
+
+    .card-text, .advantage-desc, .testimonial-quote, .author-meta {
+      color: #475569 !important;
+    }
+  }
+
+  /* Modals in Light Mode */
+  .modal-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+
+    .modal-title { color: #0f172a !important; }
+    .modal-description { color: #334155 !important; }
+    .highlights-title { color: #0284c7 !important; }
+    .highlights-list li { color: #1e293b !important; }
+    .modal-highlights {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+    .modal-close-btn {
+      background: #f1f5f9 !important;
+      color: #334155 !important;
+      border: 1px solid #cbd5e1 !important;
+      &:hover { background: #e2e8f0 !important; color: #0f172a !important; }
+    }
+    .form-label { color: #1e293b !important; }
+    .checkbox-text { color: #334155 !important; }
+    .rating-value-badge { color: #0f172a !important; }
+    .btn-cancel {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+      &:hover { background: #e2e8f0 !important; }
+    }
+  }
+
+  /* Footer in Light Mode stays dark luxury */
+  .footer-section {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    .footer-title, .brand-name { color: #ffffff !important; }
+    .footer-description, .footer-link, .footer-contact-item { color: #94a3b8 !important; }
+  }
+}
+
+/* Text Gradient Helper */
+.gradient-text {
+  background: linear-gradient(135deg, #38bdf8 0%, #14b8a6 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html.light-theme .gradient-text {
+  background: linear-gradient(135deg, #0284c7 0%, #0d9488 50%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Pulsing Badge Dot */
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-brand-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--color-brand-cyan);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px var(--color-brand-cyan); }
+  50% { opacity: 0.5; transform: scale(0.8); box-shadow: 0 0 4px var(--color-brand-cyan); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-cyan);
+}
+
+/* Material Symbols Helper */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  user-select: none;
+}
+
+/* ==========================================================================
+   GLOBAL RESPONSIVE DESIGN (DESKTOP & MOBILE ADAPTABILITY)
+   ========================================================================== */
+
+/* Universal Fluid Media & Tables */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+iframe {
+  border: 0;
+}
+
+/* Touch targets and smooth scrolling */
+a, button, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Table Responsive Container */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Screen Adaptations */
+@media (max-width: 1024px) {
+  .hero-container,
+  .about-grid,
+  .contact-grid,
+  .appointment-grid {
+    gap: 2rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Section Padding Scale on Mobile */
+  section {
+    padding-top: 3.5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  .hero-section {
+    padding-top: 5.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+
+  /* Compact Padding for Cards on Small Screens */
+  .info-card,
+  .location-map-card,
+  .appointment-form-wrapper {
+    border-radius: 20px !important;
+  }
+}

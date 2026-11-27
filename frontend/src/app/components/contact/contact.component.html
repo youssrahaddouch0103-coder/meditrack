@@ -1,0 +1,347 @@
+<section class="contact-section" id="contact">
+  <div class="contact-container">
+    
+    <!-- Section Header -->
+    <div class="contact-header">
+      <div class="contact-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">Contact</span>
+      </div>
+      <h2 class="contact-title">
+        Contactez <span class="gradient-text">{{ cabinet.name }}</span>
+      </h2>
+      <p class="contact-description">
+        Notre équipe à {{ cabinet.city }} est à votre disposition pour répondre à vos questions et vous accompagner dans votre prise de rendez-vous.
+      </p>
+    </div>
+
+    <!-- Contact Grid: Left Column Info/Schedule & Right Column Form -->
+    <div class="contact-grid">
+      
+      <!-- Left Column: Coordonnées & Horaires -->
+      <div class="contact-left-col">
+        
+        <!-- Coordonnées Card -->
+        <div class="info-card">
+          <h3 class="card-subtitle-heading">Coordonnées du cabinet</h3>
+
+          <div class="info-items-list">
+            <!-- 1. Téléphone Fixe & Mobile -->
+            <div class="info-item">
+              <div class="info-icon-wrapper">
+                <span class="material-symbols-outlined icon">call</span>
+              </div>
+              <div class="info-content">
+                <span class="item-label">Téléphones</span>
+                <a [href]="'tel:' + formatPhoneRaw(settings.landlinePhone)" class="item-address-link" *ngIf="settings.landlinePhone">
+                  <span>Fixe : {{ settings.landlinePhone }}</span>
+                </a>
+                <a [href]="formatWhatsAppLink(settings.mobilePhone)" target="_blank" rel="noopener noreferrer" class="item-address-link" style="margin-top: 2px;">
+                  <span>WhatsApp / Mobile : <strong>{{ settings.mobilePhone || '06 71 35 95 70' }}</strong></span>
+                </a>
+              </div>
+            </div>
+
+            <!-- 2. Email -->
+            <div class="info-item" *ngIf="settings.email">
+              <div class="info-icon-wrapper">
+                <span class="material-symbols-outlined icon">mail</span>
+              </div>
+              <div class="info-content">
+                <span class="item-label">Adresse E-mail</span>
+                <a [href]="'mailto:' + settings.email" class="item-address-link">
+                  <span>{{ settings.email }}</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- 3. Instagram Officiel -->
+            <div class="info-item">
+              <div class="info-icon-wrapper">
+                <span class="material-symbols-outlined icon">photo_camera</span>
+              </div>
+              <div class="info-content">
+                <span class="item-label">Instagram Officiel</span>
+                <a 
+                  [href]="settings.instagramUrl || 'https://www.instagram.com/yt_smile_center/'" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="item-address-link instagram-link"
+                  aria-label="Consulter l'Instagram de YT Smile Center">
+                  <span>{{ formatInstagramHandle(settings.instagramUrl) }}</span>
+                  <span class="material-symbols-outlined open-icon" aria-hidden="true">open_in_new</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- 3. Localisation -->
+            <div class="info-item">
+              <div class="info-icon-wrapper">
+                <span class="material-symbols-outlined icon">location_on</span>
+              </div>
+              <div class="info-content">
+                <span class="item-label">Ville & Adresse</span>
+                <a [href]="settings.googleMapsUrl || 'https://maps.google.com/?q=Temara+Maroc'" target="_blank" rel="noopener noreferrer" class="item-address-link" title="Ouvrir la carte Google Maps dans un nouvel onglet">
+                  <span>{{ formatLocationDisplay() }}</span>
+                  <span class="material-symbols-outlined open-icon" aria-hidden="true" style="font-size: 1rem; margin-left: 4px;">open_in_new</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horaires d’ouverture Card -->
+        <div class="schedule-card">
+          <div class="schedule-header">
+            <div class="schedule-icon-wrapper">
+              <span class="material-symbols-outlined">schedule</span>
+            </div>
+            <h3 class="schedule-title">Horaires d’ouverture</h3>
+          </div>
+
+          <div class="schedule-table">
+            @for (item of scheduleList; track item.day) {
+              <div class="schedule-row" [class.day-closed]="item.isClosed">
+                <span class="day-name">{{ item.day }}</span>
+                <span class="day-hours" [class.badge-closed]="item.isClosed">{{ item.hours }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Emergency Alert Box -->
+          <div class="emergency-box">
+            <div class="emergency-header">
+              <span class="material-symbols-outlined emergency-icon">emergency</span>
+              <span class="emergency-title">Urgences dentaires</span>
+            </div>
+            <p class="emergency-text">
+              En cas d’urgence dentaire, contactez-nous directement au {{ cabinet.phoneMobile }}.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Formulaire de contact -->
+      <div class="contact-right-col">
+        <div class="form-card">
+          <h3 class="form-title">Envoyez-nous un message</h3>
+          <p class="form-subtitle">Complétez le formulaire ci-dessous, notre secrétariat vous répondra dans les meilleurs délais.</p>
+
+          <!-- Feedback Success Banner -->
+          <div 
+            class="success-banner" 
+            *ngIf="submissionSuccess" 
+            aria-live="polite" 
+            role="status">
+            <span class="material-symbols-outlined banner-icon">check_circle</span>
+            <div class="banner-text">
+              <strong>Message transmis !</strong>
+              <p>{{ successMessage }}</p>
+            </div>
+          </div>
+
+          <!-- Feedback Error Banner -->
+          <div class="error-banner" *ngIf="errorMessage" role="alert" style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; color: #991b1b;">
+            <span class="material-symbols-outlined" style="color: #dc2626;">error</span>
+            <div>
+              <strong>Erreur</strong>
+              <p style="margin: 4px 0 0 0; font-size: 0.9rem;">{{ errorMessage }}</p>
+            </div>
+          </div>
+
+          <!-- Reactive Contact Form -->
+          <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form" novalidate>
+            
+            <!-- 1. Nom complet -->
+            <div class="form-group" [class.has-error]="f['name'].invalid && (f['name'].touched || isSubmitted)">
+              <label for="contact-name" class="form-label">
+                Nom complet <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon" aria-hidden="true">person</span>
+                <input 
+                  type="text" 
+                  id="contact-name" 
+                  formControlName="name" 
+                  class="form-control" 
+                  placeholder="ex. Jean Dupont"
+                  autocomplete="name"
+                  [attr.aria-invalid]="f['name'].invalid && (f['name'].touched || isSubmitted)">
+              </div>
+              <div class="error-msg" *ngIf="f['name'].invalid && (f['name'].touched || isSubmitted)" role="alert">
+                <span *ngIf="f['name'].errors?.['required']">Veuillez saisir votre nom.</span>
+                <span *ngIf="f['name'].errors?.['minlength']">Le nom doit contenir au moins 2 caractères.</span>
+              </div>
+            </div>
+
+            <!-- 2. Adresse e-mail -->
+            <div class="form-group" [class.has-error]="f['email'].invalid && (f['email'].touched || isSubmitted)">
+              <label for="contact-email" class="form-label">
+                Adresse e-mail <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon" aria-hidden="true">mail</span>
+                <input 
+                  type="email" 
+                  id="contact-email" 
+                  formControlName="email" 
+                  class="form-control" 
+                  placeholder="ex. nom@exemple.fr"
+                  autocomplete="email"
+                  [attr.aria-invalid]="f['email'].invalid && (f['email'].touched || isSubmitted)">
+              </div>
+              <div class="error-msg" *ngIf="f['email'].invalid && (f['email'].touched || isSubmitted)" role="alert">
+                <span *ngIf="f['email'].errors?.['required']">Veuillez saisir votre adresse e-mail.</span>
+                <span *ngIf="f['email'].errors?.['email']">Veuillez saisir une adresse e-mail valide.</span>
+              </div>
+            </div>
+
+            <!-- 3. Numéro de téléphone (facultatif) -->
+            <div class="form-group" [class.has-error]="f['phone'].invalid && (f['phone'].touched || isSubmitted)">
+              <label for="contact-phone" class="form-label">
+                Numéro de téléphone <span class="optional-tag">(facultatif)</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon" aria-hidden="true">call</span>
+                <input 
+                  type="tel" 
+                  id="contact-phone" 
+                  formControlName="phone" 
+                  class="form-control" 
+                  placeholder="ex. 06 71 35 95 70"
+                  autocomplete="tel"
+                  [attr.aria-invalid]="f['phone'].invalid && (f['phone'].touched || isSubmitted)">
+              </div>
+              <div class="error-msg" *ngIf="f['phone'].invalid && (f['phone'].touched || isSubmitted)" role="alert">
+                <span *ngIf="f['phone'].errors?.['pattern']">Veuillez saisir un numéro de téléphone valide.</span>
+              </div>
+            </div>
+
+            <!-- 4. Sujet -->
+            <div class="form-group" [class.has-error]="f['subject'].invalid && (f['subject'].touched || isSubmitted)">
+              <label for="contact-subject" class="form-label">
+                Sujet <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon" aria-hidden="true">subject</span>
+                <select 
+                  id="contact-subject" 
+                  formControlName="subject" 
+                  class="form-control select-control"
+                  [attr.aria-invalid]="f['subject'].invalid && (f['subject'].touched || isSubmitted)">
+                  <option value="" disabled selected>Choisissez un sujet</option>
+                  @for (option of subjectOptions; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              </div>
+              <div class="error-msg" *ngIf="f['subject'].invalid && (f['subject'].touched || isSubmitted)" role="alert">
+                <span *ngIf="f['subject'].errors?.['required']">Veuillez choisir un sujet.</span>
+              </div>
+            </div>
+
+            <!-- 5. Message -->
+            <div class="form-group" [class.has-error]="f['message'].invalid && (f['message'].touched || isSubmitted)">
+              <label for="contact-message" class="form-label">
+                Message <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <textarea 
+                  id="contact-message" 
+                  formControlName="message" 
+                  rows="4" 
+                  class="form-control textarea-control" 
+                  placeholder="Rédigez votre message ici..."
+                  [attr.aria-invalid]="f['message'].invalid && (f['message'].touched || isSubmitted)"></textarea>
+              </div>
+              <div class="error-msg" *ngIf="f['message'].invalid && (f['message'].touched || isSubmitted)" role="alert">
+                <span *ngIf="f['message'].errors?.['required']">Veuillez saisir votre message.</span>
+                <span *ngIf="f['message'].errors?.['minlength']">Le message doit contenir au moins 10 caractères.</span>
+              </div>
+            </div>
+
+            <!-- 6. Case de consentement -->
+            <div class="form-group checkbox-group" [class.has-error]="f['privacyConsent'].invalid && (f['privacyConsent'].touched || isSubmitted)">
+              <label class="checkbox-label" for="contact-privacyConsent">
+                <input 
+                  type="checkbox" 
+                  id="contact-privacyConsent" 
+                  formControlName="privacyConsent" 
+                  class="checkbox-input"
+                  [attr.aria-invalid]="f['privacyConsent'].invalid && (f['privacyConsent'].touched || isSubmitted)">
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">
+                  J’accepte que mes informations soient utilisées pour répondre à ma demande. <span class="required-star">*</span>
+                </span>
+              </label>
+              <div class="error-msg" *ngIf="f['privacyConsent'].invalid && (f['privacyConsent'].touched || isSubmitted)" role="alert">
+                <span>Vous devez accepter cette condition pour continuer.</span>
+              </div>
+            </div>
+
+            <!-- 7. Bouton d'envoi -->
+            <div class="form-actions">
+              <button 
+                type="submit" 
+                class="btn-submit" 
+                [disabled]="isSubmitting"
+                [class.loading]="isSubmitting">
+                <span class="material-symbols-outlined btn-icon" *ngIf="!isSubmitting" aria-hidden="true">send</span>
+                <span class="material-symbols-outlined btn-spinner" *ngIf="isSubmitting" aria-hidden="true">sync</span>
+                <span>{{ isSubmitting ? 'Validation en cours...' : 'Envoyer le message' }}</span>
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section 4: Localisation du cabinet avec Google Maps -->
+    <div class="location-section" id="localisation">
+      <div class="location-map-card">
+        <!-- 1. Google Maps iframe -->
+        <div class="map-iframe-container">
+          <iframe 
+            [src]="safeGoogleMapsEmbedUrl" 
+            title="Localisation du cabinet YT Smile Center" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade" 
+            allowfullscreen 
+            class="map-iframe">
+          </iframe>
+        </div>
+
+        <!-- 2. Address & Action Footer -->
+        <div class="map-details-bar">
+          <div class="address-info-block">
+            <a 
+              [href]="settings.googleMapsUrl || 'https://maps.google.com/?q=Temara+Maroc'" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="address-link" 
+              title="Ouvrir la carte du cabinet dans Google Maps">
+              <span class="material-symbols-outlined address-icon" aria-hidden="true">location_on</span>
+              <span class="address-text">{{ formatLocationDisplay() }}</span>
+            </a>
+            <span class="address-help-text">Cliquez sur l’adresse pour l’ouvrir dans Google Maps</span>
+          </div>
+
+          <div class="directions-btn-block">
+            <a 
+              [href]="settings.googleMapsUrl || 'https://maps.google.com/?q=Temara+Maroc'" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="btn-directions">
+              <span class="material-symbols-outlined icon-btn" aria-hidden="true">directions</span>
+              <span>Voir l’itinéraire</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

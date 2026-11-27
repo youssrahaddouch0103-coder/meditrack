@@ -1,0 +1,308 @@
+<section class="appointment-section" id="rendez-vous">
+  <div class="appointment-container">
+    
+    <!-- Section Header -->
+    <div class="appointment-header">
+      <div class="appointment-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">Prendre rendez-vous</span>
+      </div>
+      <h2 class="appointment-title">
+        Réservez votre consultation chez <span class="gradient-text">YT Smile Center</span>
+      </h2>
+      <p class="appointment-description">
+        Remplissez le formulaire ci-dessous. Notre équipe vous recontactera rapidement pour vous confirmer la date et l’horaire de votre rendez-vous à {{ settings.city || 'Témara' }}.
+      </p>
+    </div>
+
+    <div class="appointment-grid">
+      
+      <!-- Left Column: Reassuring Infos & Contact Highlights -->
+      <div class="appointment-info-card">
+        <h3 class="info-card-title">Informations & Horaires</h3>
+        <p class="info-card-subtitle">
+          YT Smile Center vous accueille dans un environnement chaleureux, moderne et entièrement accessible à {{ settings.city || 'Témara' }}.
+        </p>
+
+        <div class="info-list">
+          <div class="info-item">
+            <div class="info-icon-wrapper">
+              <span class="material-symbols-outlined info-icon">schedule</span>
+            </div>
+            <div class="info-text">
+              <span class="info-label">Horaires d’ouverture</span>
+              <span class="info-value">Lun–Ven : {{ formatWeekdayHours() }}</span>
+              <span class="info-value">Samedi : {{ formatSaturdayHours() }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-icon-wrapper">
+              <span class="material-symbols-outlined info-icon">location_on</span>
+            </div>
+            <div class="info-text">
+              <span class="info-label">Adresse du cabinet</span>
+              <span class="info-value">{{ formatLocationDisplay() }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-icon-wrapper">
+              <span class="material-symbols-outlined info-icon">call</span>
+            </div>
+            <div class="info-text">
+              <span class="info-label">Téléphone & WhatsApp</span>
+              <a [href]="'tel:' + formatPhoneRaw(settings.landlinePhone)" class="info-phone-link" *ngIf="settings.landlinePhone">
+                <span>Fixe : {{ settings.landlinePhone }}</span>
+              </a>
+              <a [href]="formatWhatsAppLink(settings.mobilePhone)" target="_blank" rel="noopener noreferrer" class="info-phone-link">
+                <span>Mobile / WhatsApp : <strong>{{ settings.mobilePhone || '06 71 35 95 70' }}</strong></span>
+              </a>
+            </div>
+          </div>
+
+          <div class="info-item" *ngIf="settings.email">
+            <div class="info-icon-wrapper">
+              <span class="material-symbols-outlined info-icon">mail</span>
+            </div>
+            <div class="info-text">
+              <span class="info-label">Adresse E-mail</span>
+              <a [href]="'mailto:' + settings.email" class="info-value" style="color: inherit; text-decoration: none;">
+                <span>{{ settings.email }}</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-icon-wrapper">
+              <span class="material-symbols-outlined info-icon">location_on</span>
+            </div>
+            <div class="info-text">
+              <span class="info-label">Adresse du cabinet</span>
+              <a [href]="settings.googleMapsUrl || 'https://maps.google.com/?q=Temara+Maroc'" target="_blank" rel="noopener noreferrer" class="info-value" style="color: inherit; text-decoration: none;">
+                <span>{{ formatLocationDisplay() }}</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-icon-wrapper">
+              <span class="material-symbols-outlined info-icon">emergency</span>
+            </div>
+            <div class="info-text">
+              <span class="info-label">Urgences dentaires</span>
+              <span class="info-value">Prise en charge prioritaire</span>
+              <span class="info-sub">Contactez-nous directement par téléphone</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="reassurance-box">
+          <span class="material-symbols-outlined check-icon">verified_user</span>
+          <span>Vos données personnelles sont traitées dans le respect strict du secret médical et du RGPD.</span>
+        </div>
+      </div>
+
+      <!-- Right Column: Reactive Appointment Form -->
+      <div class="appointment-form-wrapper">
+        
+        <!-- Feedback Success Banner -->
+        <div class="success-banner" *ngIf="submissionSuccess" role="alert">
+          <span class="material-symbols-outlined banner-icon">check_circle</span>
+          <div class="banner-text">
+            <strong>Demande enregistrée !</strong>
+            <p>{{ successMessage }}</p>
+          </div>
+        </div>
+
+        <!-- Feedback Error Banner -->
+        <div class="error-banner" *ngIf="errorMessage" role="alert" style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; color: #991b1b;">
+          <span class="material-symbols-outlined" style="color: #dc2626;">error</span>
+          <div>
+            <strong>Erreur</strong>
+            <p style="margin: 4px 0 0 0; font-size: 0.9rem;">{{ errorMessage }}</p>
+          </div>
+        </div>
+
+        <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="appointment-form" novalidate>
+          
+          <!-- Row 1: Full Name & Phone -->
+          <div class="form-row">
+            <!-- Full Name -->
+            <div class="form-group" [class.has-error]="f['fullName'].invalid && (f['fullName'].touched || isSubmitted)">
+              <label for="fullName" class="form-label">
+                Nom et prénom <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon">person</span>
+                <input 
+                  type="text" 
+                  id="fullName" 
+                  formControlName="fullName" 
+                  class="form-control" 
+                  placeholder="ex. Jean Dupont"
+                  autocomplete="name">
+              </div>
+              <div class="error-msg" *ngIf="f['fullName'].invalid && (f['fullName'].touched || isSubmitted)">
+                <span *ngIf="f['fullName'].errors?.['required']">Veuillez renseigner votre nom complet.</span>
+                <span *ngIf="f['fullName'].errors?.['minlength']">Au moins 2 caractères requis.</span>
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="form-group" [class.has-error]="f['phone'].invalid && (f['phone'].touched || isSubmitted)">
+              <label for="phone" class="form-label">
+                Numéro de téléphone <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon">phone</span>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  formControlName="phone" 
+                  class="form-control" 
+                  placeholder="ex. 06 71 35 95 70"
+                  autocomplete="tel">
+              </div>
+              <div class="error-msg" *ngIf="f['phone'].invalid && (f['phone'].touched || isSubmitted)">
+                <span *ngIf="f['phone'].errors?.['required']">Veuillez saisir votre téléphone.</span>
+                <span *ngIf="f['phone'].errors?.['pattern']">Numéro de téléphone invalide (8 à 20 chiffres).</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Email & Care Type -->
+          <div class="form-row">
+            <!-- Email -->
+            <div class="form-group" [class.has-error]="f['email'].invalid && (f['email'].touched || isSubmitted)">
+              <label for="email" class="form-label">
+                Adresse e-mail <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon">mail</span>
+                <input 
+                  type="email" 
+                  id="email" 
+                  formControlName="email" 
+                  class="form-control" 
+                  placeholder="ex. jean.dupont@email.fr"
+                  autocomplete="email">
+              </div>
+              <div class="error-msg" *ngIf="f['email'].invalid && (f['email'].touched || isSubmitted)">
+                <span *ngIf="f['email'].errors?.['required']">Veuillez renseigner votre adresse email.</span>
+                <span *ngIf="f['email'].errors?.['email']">Format d’adresse e-mail invalide.</span>
+              </div>
+            </div>
+
+            <!-- Desired Care -->
+            <div class="form-group" [class.has-error]="f['careType'].invalid && (f['careType'].touched || isSubmitted)">
+              <label for="careType" class="form-label">
+                Soin souhaité <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon">medical_services</span>
+                <select id="careType" formControlName="careType" class="form-control select-control">
+                  <option value="" disabled selected>Sélectionnez un soin</option>
+                  <option *ngFor="let care of careOptions" [value]="care">{{ care }}</option>
+                </select>
+              </div>
+              <div class="error-msg" *ngIf="f['careType'].invalid && (f['careType'].touched || isSubmitted)">
+                <span *ngIf="f['careType'].errors?.['required']">Veuillez choisir le soin souhaité.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 3: Date & Time -->
+          <div class="form-row">
+            <!-- Desired Date -->
+            <div class="form-group" [class.has-error]="f['preferredDate'].invalid && (f['preferredDate'].touched || isSubmitted)">
+              <label for="preferredDate" class="form-label">
+                Date souhaitée <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon">calendar_today</span>
+                <input 
+                  type="date" 
+                  id="preferredDate" 
+                  formControlName="preferredDate" 
+                  [min]="minDate"
+                  class="form-control date-control">
+              </div>
+              <div class="error-msg" *ngIf="f['preferredDate'].invalid && (f['preferredDate'].touched || isSubmitted)">
+                <span *ngIf="f['preferredDate'].errors?.['required']">Veuillez sélectionner une date.</span>
+                <span *ngIf="f['preferredDate'].errors?.['pastDate']">La date ne peut pas être antérieure à aujourd’hui.</span>
+              </div>
+            </div>
+
+            <!-- Desired Time Slot -->
+            <div class="form-group" [class.has-error]="f['preferredTime'].invalid && (f['preferredTime'].touched || isSubmitted)">
+              <label for="preferredTime" class="form-label">
+                Heure souhaitée <span class="required-star">*</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="material-symbols-outlined field-icon">schedule</span>
+                <select id="preferredTime" formControlName="preferredTime" class="form-control select-control">
+                  <option value="" disabled selected>Choisissez un horaire</option>
+                  <option *ngFor="let slot of timeSlotOptions" [value]="slot.value">{{ slot.label }}</option>
+                </select>
+              </div>
+              <div class="error-msg" *ngIf="f['preferredTime'].invalid && (f['preferredTime'].touched || isSubmitted)">
+                <span *ngIf="f['preferredTime'].errors?.['required']">Veuillez sélectionner une heure.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Optional Message -->
+          <div class="form-group">
+            <label for="message" class="form-label">
+              Précisions ou message <span class="optional-tag">(facultatif)</span>
+            </label>
+            <div class="input-wrapper">
+              <textarea 
+                id="message" 
+                formControlName="message" 
+                rows="3" 
+                class="form-control textarea-control" 
+                placeholder="Indiquez ici toute précision utile (ex. symptômes, appréhensions, questions)..."></textarea>
+            </div>
+          </div>
+
+          <!-- Privacy Policy Checkbox -->
+          <div class="form-group checkbox-group" [class.has-error]="f['privacyConsent'].invalid && (f['privacyConsent'].touched || isSubmitted)">
+            <label class="checkbox-label" for="privacyConsent">
+              <input 
+                type="checkbox" 
+                id="privacyConsent" 
+                formControlName="privacyConsent" 
+                class="checkbox-input">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                J’accepte que mes données personnelles soient traitées afin d’organiser mon rendez-vous médical. <span class="required-star">*</span>
+              </span>
+            </label>
+            <div class="error-msg" *ngIf="f['privacyConsent'].invalid && (f['privacyConsent'].touched || isSubmitted)">
+              <span>Vous devez accepter la politique de confidentialité pour envoyer votre demande.</span>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="form-actions">
+            <button 
+              type="submit" 
+              class="btn-submit" 
+              [disabled]="isSubmitting"
+              [class.loading]="isSubmitting">
+              <span class="material-symbols-outlined btn-icon" *ngIf="!isSubmitting">send</span>
+              <span class="material-symbols-outlined btn-spinner" *ngIf="isSubmitting">sync</span>
+              <span>{{ isSubmitting ? 'Validation en cours...' : 'Envoyer la demande' }}</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
